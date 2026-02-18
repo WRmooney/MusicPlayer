@@ -1,0 +1,21 @@
+Notes about how to use Kivy
+
+Kivy itself:
+
+Main.py has the main app entry point, aka the base widget?
+widgets are things that are parts
+
+
+in kv files:
+
+<NameThingIdk>: This defines the rules that apply to all NameThingIdk instances
+^^^ that is a widget rule
+kv files use indentation to define nested blocks
+rule sections allow to define the style and contents
+can set property values, add child widgets, add graphics instructions, etc.
+
+canvas sections defines some basic graphics for the entire widget
+Labels are basically text 
+
+
+
