@@ -1,19 +1,86 @@
 #:kivy 2.3.1
 
+#:set bg_color 142/255.0,103/255.0,156/255.0,1
+#:set btn_color 162/255.0,123/255.0,176/255.0,1
+
 <MusicMenu>:
-    canvas:
+    orientation: 'vertical'
+
+    canvas.before:
+        Color:
+            rgba:bg_color
         Rectangle:
-            pos: self.center_x - 5, 0
-            size: 10, self.height
+            pos:self.pos
+            size:self.size
+
+    AnchorLayout:
+        size_hint_y: 0.1
+        anchor_x: "left"
+        anchor_y: "top"
+        padding: [25,25,0,0]
+        Button:
+            text: "Back"
+            size_hint_y: 0.8
+            size_hint_x: 0.1
+            background_normal: ''
+            background_color: btn_color
+
+
+    BoxLayout:
+        size_hint_y: 0.5
+        AsyncImage:
+            source: "https://blogofsound.co.uk/wp-content/uploads/2024/09/luvsic_hexalogy.jpg?w=300"
+            fit_mode: "contain"
+
+
 
     Label:
-        font_size: 70
-        center_x: root.width / 4
-        top: root.top - 50
-        text: "0"
+        size_hint_y: 0.05
+        text: "Song Title"
 
     Label:
-        font_size: 70
-        center_x: root.width * 3 / 4
-        top: root.top - 50
-        text: "0"
+        size_hint_y: 0.05
+        text: "Album"
+
+    BoxLayout:
+        size_hint_y: 0.1
+        size_hint_x: 1
+        padding: [200,0,200,0]
+        Slider:
+            value_track: True
+            value_track_color: 0,0,0,1
+
+
+
+
+
+
+    BoxLayout:
+        size_hint_y: 0.2
+        orientation: 'horizontal'
+        spacing: 100
+        padding: [200,50,200,50]
+
+        Button:
+            text: "shuffle"
+            background_normal: ''
+            background_color: btn_color
+        Button:
+            text: "back"
+            background_normal: ''
+            background_color: btn_color
+        Button:
+            text: "pause/play"
+            background_normal: ''
+            background_color: btn_color
+        Button:
+            text: "forward"
+            background_normal: ''
+            background_color: btn_color
+        Button:
+            text: "loop"
+            background_normal: ''
+            background_color: btn_color
+
+
+
