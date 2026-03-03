@@ -29,6 +29,10 @@ from mutagen.easyid3 import EasyID3
 import ffpyplayer
 from ffpyplayer.player import MediaPlayer
 
+# other imports
+import math
+import time
+
 filepath = 'resources/Test_Resources/Modal Soul.mp3'
 song1 = MediaPlayer('resources/Test_Resources/Modal Soul.mp3',
                     ff_opts={"paused": True})
@@ -58,7 +62,7 @@ class MusicMenu(BoxLayout):
     def __init__(self, **kwargs):
         super(MusicMenu, self).__init__(**kwargs)
         Clock.schedule_interval(self.update, 1)
-        self.ids.duration_label.text = str(current_info['duration'])
+        self.ids.duration_label.text = time.strftime('%M:%S', time.gmtime(current_info['duration']))
 
 
 
@@ -66,7 +70,7 @@ class MusicMenu(BoxLayout):
         # get song position and update slider
         cur_pos = current_song.get_pts()
         self.ids.duration_slider.value = cur_pos/current_info['duration']*100
-        print(song1.get_pts())
+        self.ids.time_stamp_label.text = time.strftime('%M:%S', time.gmtime(cur_pos))
 
 
     def play_btn_press(self):
