@@ -40,7 +40,7 @@ import time
 import PIL
 from PIL import Image
 
-filepath = 'resources/Test_Resources/Chase.mp3'
+filepath = 'resources/Test_Resources/Sidewinder.mp3'
 song1 = MediaPlayer(filepath,
                     ff_opts={"paused": True})
 current_song = song1
@@ -101,20 +101,40 @@ class MusicMenu(BoxLayout):
 
     def __init__(self, **kwargs):
         super(MusicMenu, self).__init__(**kwargs)
-        Clock.schedule_interval(self.update, 1)
+        Clock.schedule_interval(self.update, 0.5)
         self.ids.duration_label.text = time.strftime('%M:%S', time.gmtime(current_info['duration']))
         self.ids.song_title.text = current_info['title']
         self.ids.artist_name.text = current_info['artist']
         self.ids.album_cover.texture = get_album_cover(filepath).texture
-
-
-
+        self.ids.duration_slider.max = current_info['duration']
+        self.pause_by_slider = False
 
     def update(self, *args):
         # get song position and update slider
-        cur_pos = current_song.get_pts()
-        self.ids.duration_slider.value = cur_pos/current_info['duration']*100
+        # if song is paused, keep position the same`
+        print("current slider val: " + str(self.ids.duration_slider.value))
+        cur_pos = self.ids.duration_slider.value
+        if not current_song.get_pause(): # if song is paused, don't update the slider based on song position
+            cur_pos = current_song.get_pts()
+        self.ids.duration_slider.value = cur_pos
         self.ids.time_stamp_label.text = time.strftime('%M:%S', time.gmtime(cur_pos))
+
+
+
+    def slider_touched(self):
+        if not current_song.get_pause():
+            if not self.pause_by_slider:
+                current_song.set_pause(True)
+                self.pause_by_slider = True
+        print("slider_touched")
+
+    def slider_up(self):
+        new_pos = self.ids.duration_slider.value
+        current_song.seek(new_pos, relative=False)
+        if self.pause_by_slider:
+            current_song.set_pause(False)
+            self.pause_by_slider = False
+        print("slider_up")
 
 
 
