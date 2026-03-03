@@ -40,10 +40,7 @@ import time
 import PIL
 from PIL import Image
 
-filepath = 'resources/Test_Resources/Sidewinder.mp3'
-song1 = MediaPlayer(filepath,
-                    ff_opts={"paused": True})
-current_song = song1
+
 
 
 # mp3 metadata function
@@ -95,6 +92,16 @@ def default_image():
     kivy_core_image = CoreImage(io.BytesIO(data.read()), ext='png')
     return kivy_core_image
 
+def song_finished():
+    print("song finished")
+    
+
+
+filepath = 'resources/Test_Resources/READY TO FLY.mp3'
+song1 = MediaPlayer(filepath,
+                    callback=song_finished(),
+                    ff_opts={"paused": True})
+current_song = song1
 current_info = get_mp3_info(filepath)
 
 class MusicMenu(BoxLayout):
@@ -108,16 +115,22 @@ class MusicMenu(BoxLayout):
         self.ids.album_cover.texture = get_album_cover(filepath).texture
         self.ids.duration_slider.max = current_info['duration']
         self.pause_by_slider = False
+        self.pause_by_button = False
 
     def update(self, *args):
+        # check if the song is finished
+        if (current_info['duration'] - current_song.get_pts()) < 0.1:
+            song_finished()
+
         # get song position and update slider
         # if song is paused, keep position the same`
-        print("current slider val: " + str(self.ids.duration_slider.value))
         cur_pos = self.ids.duration_slider.value
         if not current_song.get_pause(): # if song is paused, don't update the slider based on song position
             cur_pos = current_song.get_pts()
         self.ids.duration_slider.value = cur_pos
         self.ids.time_stamp_label.text = time.strftime('%M:%S', time.gmtime(cur_pos))
+
+
 
 
 
@@ -142,11 +155,19 @@ class MusicMenu(BoxLayout):
         if current_song.get_pause():
             current_song.set_pause(False)
             self.ids.play_btn.text = 'Pause'
+            self.pause_by_button = False
         else:
             current_song.set_pause(True)
             self.ids.play_btn.text = 'Play'
+            self.pause_by_button = True
 
-
+    def toggle_loop(self):
+        if current_song.ff_opts != 0:
+            current_song.loop = 0
+            self.ids.loop_btn.text = 'Loop: On'
+        else:
+            current_song.loop = 1
+            self.ids.loop_btn.text = 'Loop: Off'
 
 
 
