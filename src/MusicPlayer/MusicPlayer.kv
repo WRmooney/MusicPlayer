@@ -5,7 +5,8 @@
 
 <MusicMenu>:
     orientation: 'vertical'
-
+    size_hint: (1,1)
+    # color
     canvas.before:
         Color:
             rgba:bg_color
@@ -13,6 +14,7 @@
             pos:self.pos
             size:self.size
 
+    # back button
     AnchorLayout:
         size_hint_y: 0.1
         anchor_x: "left"
@@ -25,22 +27,39 @@
             background_normal: ''
             background_color: btn_color
 
-
+    # album cover
     BoxLayout:
+        id: album_cover_container
         size_hint_y: 0.5
-        AsyncImage:
-            source: "https://blogofsound.co.uk/wp-content/uploads/2024/09/luvsic_hexalogy.jpg?w=300"
+        width: self.height
+        pos_hint: {'center_x' : 0.5, 'center_y' : 0.5}
+        canvas.before:
+            Color:
+                rgba:bg_color
+            Rectangle:
+                pos:self.pos
+                size:self.size
+        Image:
+            size: (450,450)
+            id: album_cover
             fit_mode: "contain"
+            width: self.height
 
 
     # song info
     Label:
+        id: song_title
         size_hint_y: 0.05
         text: "Song Title"
 
     Label:
+        id: artist_name
         size_hint_y: 0.05
-        text: "Album"
+        text: "Artist"
+
+
+
+
 
     # song duration and bar
     BoxLayout:
