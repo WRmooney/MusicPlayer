@@ -33,7 +33,7 @@
             fit_mode: "contain"
 
 
-
+    # song info
     Label:
         size_hint_y: 0.05
         text: "Song Title"
@@ -42,19 +42,30 @@
         size_hint_y: 0.05
         text: "Album"
 
+    # song duration and bar
     BoxLayout:
         size_hint_y: 0.1
         size_hint_x: 1
         padding: [200,0,200,0]
+
+        Label:
+            size_hint_x: 0.1
+            text: "0:00"
+            background_color: 255/255.0,200/255.0,156/255.0,0.5
         Slider:
+            id: duration_slider
             value_track: True
             value_track_color: 0,0,0,1
+            size_hint_x: 0.8
+            cursor_size: (30, 30)
+            value: 50
+        Label:
+            id: duration_label
+            size_hint_x: 0.1
+            text: "0:00"
 
 
-
-
-
-
+    # buttons
     BoxLayout:
         size_hint_y: 0.2
         orientation: 'horizontal'
@@ -70,7 +81,9 @@
             background_normal: ''
             background_color: btn_color
         Button:
-            text: "pause/play"
+            id: play_btn
+            on_press: root.play_btn_press()
+            text: "Play"
             background_normal: ''
             background_color: btn_color
         Button:
