@@ -42,12 +42,13 @@ from PIL import Image
 import random
 
 # important global variables
-current_song = None
-directory = ''
+
+directory = 'resources/Test_Resources/'
 loop = False
 queue = []
 queue_index = 0
 current_song_info = {}
+current_song = None
 
 
 
@@ -106,11 +107,7 @@ def song_finished(ref):
     global queue_index
     global loop
 
-    if loop: # close and open player with the same song
-        MediaPlayer.close_player(current_song)
-        current_song = MediaPlayer(filepath,
-                    ff_opts={"paused": False})
-    else:
+    if not loop:
         if queue_index == len(queue)-1:
             queue_index = 0
         else:
@@ -123,13 +120,15 @@ def play_song(songname, ref, playing):
     MediaPlayer.close_player(current_song)
     filepath = directory + songname
     current_song = MediaPlayer(filepath,
-                ff_opts={"paused": playing})
+                ff_opts={"paused": playing},
+                ss=0.0)
     update_info(directory, queue[queue_index], ref)
 
 def update_info(dir, name, ref):
     global current_song_info
     current_song_info = get_mp3_info(dir + name)
     current_song_info['filepath'] = dir + name
+    ref.ids.duration_slider.value = 0
     ref.ids.duration_label.text = time.strftime('%M:%S', time.gmtime(current_song_info['duration']))
     ref.ids.song_title.text = current_song_info['title']
     ref.ids.artist_name.text = current_song_info['artist']
@@ -138,19 +137,11 @@ def update_info(dir, name, ref):
     ref.pause_by_slider = False
     ref.pause_by_button = False
 
-loop = False
-directory = 'resources/Test_Resources/'
-songname = 'READY TO FLY.mp3'
-filepath = directory + songname
-current_song = MediaPlayer(filepath,
-                           ff_opts={"paused": False})
-queue_index = 0
-
 class CustomSlider(Slider):
     def on_touch_down(self, touch):
         # Check if the touch collision is within the widget
         if self.collide_point(*touch.pos):
-            print("Slider clicked/touched!")
+            #print("Slider clicked/touched!")
             # Consume the event
             App.get_running_app().root.slider_touched()
             return super(CustomSlider, self).on_touch_down(touch)
@@ -183,7 +174,7 @@ class MusicMenu(BoxLayout):
             if not self.pause_by_slider:
                 current_song.set_pause(True)
                 self.pause_by_slider = True
-        print("slider_touched")
+        #print("slider_touched")
 
     def slider_up(self):
         new_pos = self.ids.duration_slider.value
@@ -192,9 +183,7 @@ class MusicMenu(BoxLayout):
         if self.pause_by_slider:
             current_song.set_pause(False)
             self.pause_by_slider = False
-        print("slider_up")
-
-
+        #print("slider_up")
 
     def play_btn_press(self):
         if current_song.get_pause():
@@ -249,7 +238,6 @@ class MusicPlayerApp(App):
         queue = ['pt1.mp3','pt2.mp3','pt3.mp3','pt4.mp3','pt5.mp3','pt6.mp3']
         queue_index = 0
         return MusicMenu()
-
 
 if __name__ == '__main__':
     MusicPlayerApp().run()
