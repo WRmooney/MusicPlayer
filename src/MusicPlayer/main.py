@@ -13,7 +13,6 @@ from kivy.uix.widget import Widget
 from kivy.properties import NumericProperty, ReferenceListProperty, ObjectProperty
 from kivy.vector import Vector
 from kivy.clock import Clock
-from random import randint
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
@@ -39,6 +38,7 @@ import math
 import time
 import PIL
 from PIL import Image
+import random
 
 # important global variables
 current_song = None
@@ -233,7 +233,9 @@ class MusicMenu(BoxLayout):
             queue_index -= 1
         play_song(queue[queue_index], self)
 
-
+    def shuffle_queue(self):
+        global queue
+        random.shuffle(queue)
 
 
 
