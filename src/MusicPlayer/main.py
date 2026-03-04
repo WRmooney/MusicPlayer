@@ -40,6 +40,13 @@ import time
 import PIL
 from PIL import Image
 
+# important global variables
+current_song = None
+directory = ''
+loop = False
+queue = []
+queue_index = 0
+current_song_info = {}
 
 
 
@@ -92,35 +99,69 @@ def default_image():
     kivy_core_image = CoreImage(io.BytesIO(data.read()), ext='png')
     return kivy_core_image
 
-def song_finished():
-    print("song finished")
-    
+def song_finished(ref):
+    global current_song
+    global queue
+    global queue_index
+    global loop
+
+    if loop: # close and open player with the same song
+        MediaPlayer.close_player(current_song)
+        current_song = MediaPlayer(filepath,
+                    ff_opts={"paused": False})
+    else:
+        if queue_index == len(queue)-1:
+            queue_index = 0
+        else:
+            queue_index += 1
+    play_song(queue[queue_index], ref)
 
 
-filepath = 'resources/Test_Resources/READY TO FLY.mp3'
-song1 = MediaPlayer(filepath,
-                    callback=song_finished(),
-                    ff_opts={"paused": True})
-current_song = song1
-current_info = get_mp3_info(filepath)
+def play_song(songname, ref):
+    global current_song
+    global directory
+    MediaPlayer.close_player(current_song)
+    filepath = directory + songname
+    current_song = MediaPlayer(filepath,
+                ff_opts={"paused": False})
+    update_info(directory, queue[queue_index], ref)
+
+def update_info(dir, name, ref):
+    global current_song_info
+    current_song_info = get_mp3_info(dir + name)
+    current_song_info['filepath'] = dir + name
+    ref.ids.duration_label.text = time.strftime('%M:%S', time.gmtime(current_song_info['duration']))
+    ref.ids.song_title.text = current_song_info['title']
+    ref.ids.artist_name.text = current_song_info['artist']
+    ref.ids.album_cover.texture = get_album_cover(dir + name).texture
+    ref.ids.duration_slider.max = current_song_info['duration']
+    ref.pause_by_slider = False
+    ref.pause_by_button = False
+
+loop = False
+directory = 'resources/Test_Resources/'
+songname = 'READY TO FLY.mp3'
+filepath = directory + songname
+current_song = MediaPlayer(filepath,
+                ff_opts={"paused": False})
+queue_index = 0
+
 
 class MusicMenu(BoxLayout):
 
     def __init__(self, **kwargs):
         super(MusicMenu, self).__init__(**kwargs)
         Clock.schedule_interval(self.update, 0.5)
-        self.ids.duration_label.text = time.strftime('%M:%S', time.gmtime(current_info['duration']))
-        self.ids.song_title.text = current_info['title']
-        self.ids.artist_name.text = current_info['artist']
-        self.ids.album_cover.texture = get_album_cover(filepath).texture
-        self.ids.duration_slider.max = current_info['duration']
-        self.pause_by_slider = False
-        self.pause_by_button = False
+        play_song(queue[0], self)
+
+
+
 
     def update(self, *args):
+        global current_song_info
         # check if the song is finished
-        if (current_info['duration'] - current_song.get_pts()) < 0.1:
-            song_finished()
+        if (current_song_info['duration'] - current_song.get_pts()) < 0.1:
+            song_finished(self)
 
         # get song position and update slider
         # if song is paused, keep position the same`
@@ -162,12 +203,35 @@ class MusicMenu(BoxLayout):
             self.pause_by_button = True
 
     def toggle_loop(self):
-        if current_song.ff_opts != 0:
-            current_song.loop = 0
-            self.ids.loop_btn.text = 'Loop: On'
-        else:
-            current_song.loop = 1
+        global loop
+        if loop:
+            loop = False
             self.ids.loop_btn.text = 'Loop: Off'
+        else:
+            loop = True
+            self.ids.loop_btn.text = 'Loop: On'
+
+    def forward_btn_press(self):
+        global queue
+        global queue_index
+        if queue_index == len(queue) - 1:
+            queue_index = 0
+        else:
+            queue_index += 1
+
+        play_song(queue[queue_index], self)
+
+    def song_back(self):
+        global current_song
+        global queue
+        global queue_index
+        global loop
+
+        if queue_index == 0:
+            queue_index = len(queue)-1
+        else:
+            queue_index -= 1
+        play_song(queue[queue_index], self)
 
 
 
@@ -175,8 +239,11 @@ class MusicMenu(BoxLayout):
 
 class MusicPlayerApp(App):
     def build(self):
+        global queue
+        global queue_index
         Window.set_icon('resources/images/icon.png')
-
+        queue = ['pt1.mp3','pt2.mp3','pt3.mp3','pt4.mp3','pt5.mp3','pt6.mp3']
+        queue_index = 0
         return MusicMenu()
 
 

@@ -99,6 +99,8 @@
             background_normal: ''
             background_color: btn_color
         Button:
+            id: reverse_btn
+            on_press: root.song_back()
             text: "back"
             background_normal: ''
             background_color: btn_color
@@ -109,6 +111,8 @@
             background_normal: ''
             background_color: btn_color
         Button:
+            id: forward_btn
+            on_press: root.forward_btn_press()
             text: "forward"
             background_normal: ''
             background_color: btn_color
