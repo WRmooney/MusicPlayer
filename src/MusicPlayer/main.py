@@ -19,6 +19,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.core.window import Window
 from kivy.core.image import Image as CoreImage
+from kivy.uix.slider import Slider
 
 
 # Mutagen Imports (for getting file info like title etc.)
@@ -114,16 +115,15 @@ def song_finished(ref):
             queue_index = 0
         else:
             queue_index += 1
-    play_song(queue[queue_index], ref)
+    play_song(queue[queue_index], ref, current_song.get_pause())
 
-
-def play_song(songname, ref):
+def play_song(songname, ref, playing):
     global current_song
     global directory
     MediaPlayer.close_player(current_song)
     filepath = directory + songname
     current_song = MediaPlayer(filepath,
-                ff_opts={"paused": False})
+                ff_opts={"paused": playing})
     update_info(directory, queue[queue_index], ref)
 
 def update_info(dir, name, ref):
@@ -143,19 +143,26 @@ directory = 'resources/Test_Resources/'
 songname = 'READY TO FLY.mp3'
 filepath = directory + songname
 current_song = MediaPlayer(filepath,
-                ff_opts={"paused": False})
+                           ff_opts={"paused": False})
 queue_index = 0
 
+class CustomSlider(Slider):
+    def on_touch_down(self, touch):
+        # Check if the touch collision is within the widget
+        if self.collide_point(*touch.pos):
+            print("Slider clicked/touched!")
+            # Consume the event
+            App.get_running_app().root.slider_touched()
+            return super(CustomSlider, self).on_touch_down(touch)
+        # If not, ignore
+        return False
 
 class MusicMenu(BoxLayout):
 
     def __init__(self, **kwargs):
         super(MusicMenu, self).__init__(**kwargs)
-        Clock.schedule_interval(self.update, 0.5)
-        play_song(queue[0], self)
-
-
-
+        Clock.schedule_interval(self.update, 0.1)
+        play_song(queue[0], self, True)
 
     def update(self, *args):
         global current_song_info
@@ -171,10 +178,6 @@ class MusicMenu(BoxLayout):
         self.ids.duration_slider.value = cur_pos
         self.ids.time_stamp_label.text = time.strftime('%M:%S', time.gmtime(cur_pos))
 
-
-
-
-
     def slider_touched(self):
         if not current_song.get_pause():
             if not self.pause_by_slider:
@@ -184,7 +187,8 @@ class MusicMenu(BoxLayout):
 
     def slider_up(self):
         new_pos = self.ids.duration_slider.value
-        current_song.seek(new_pos, relative=False)
+        if math.fabs(new_pos - current_song.get_pts()) > 0.1:
+            current_song.seek(new_pos, relative=False)
         if self.pause_by_slider:
             current_song.set_pause(False)
             self.pause_by_slider = False
@@ -219,7 +223,7 @@ class MusicMenu(BoxLayout):
         else:
             queue_index += 1
 
-        play_song(queue[queue_index], self)
+        play_song(queue[queue_index], self, current_song.get_pause())
 
     def song_back(self):
         global current_song
@@ -231,13 +235,11 @@ class MusicMenu(BoxLayout):
             queue_index = len(queue)-1
         else:
             queue_index -= 1
-        play_song(queue[queue_index], self)
+        play_song(queue[queue_index], self, current_song.get_pause())
 
     def shuffle_queue(self):
         global queue
         random.shuffle(queue)
-
-
 
 class MusicPlayerApp(App):
     def build(self):

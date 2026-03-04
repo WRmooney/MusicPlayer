@@ -72,15 +72,15 @@
             size_hint_x: 0.1
             text: "0:00"
 
-        Slider:
+        CustomSlider:
             id: duration_slider
             value_track: True
             value_track_color: 0,0,0,1
             size_hint_x: 0.8
             cursor_size: (30, 30)
             value: 0
-            on_touch_down: root.slider_touched()
             on_touch_up: root.slider_up()
+
         Label:
             id: duration_label
             size_hint_x: 0.1
