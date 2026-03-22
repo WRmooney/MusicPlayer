@@ -1,6 +1,8 @@
+# kivy version requirement
 import kivy
 kivy.require('2.3.1') # replace with your current kivy version !
 
+#region
 # IMPORTANT for audio
 import sys
 import os
@@ -21,7 +23,6 @@ from kivy.core.window import Window
 from kivy.core.image import Image as CoreImage
 from kivy.uix.slider import Slider
 
-
 # Mutagen Imports (for getting file info like title etc.)
 import mutagen
 from mutagen.mp3 import MP3
@@ -40,9 +41,14 @@ import time
 import PIL
 from PIL import Image
 import random
+import json
+
+# modules
+import file_manager
+
+#endregion
 
 # important global variables
-
 directory = 'resources/Test_Resources/'
 loop = False
 queue = []
@@ -52,7 +58,7 @@ current_song = None
 
 
 
-# mp3 metadata function
+# important functions (make class for later?)
 def get_mp3_info(filepath):
     # Use mutagen to get info
     try:
@@ -137,6 +143,7 @@ def update_info(dir, name, ref):
     ref.pause_by_slider = False
     ref.pause_by_button = False
 
+# custom slider, important for functionality
 class CustomSlider(Slider):
     def on_touch_down(self, touch):
         # Check if the touch collision is within the widget
@@ -235,7 +242,7 @@ class MusicPlayerApp(App):
         global queue
         global queue_index
         Window.set_icon('resources/images/icon.png')
-        queue = ['pt1.mp3','pt2.mp3','pt3.mp3','pt4.mp3','pt5.mp3','pt6.mp3']
+        queue = ['Sidewinder.mp3', 'pt1.mp3','pt2.mp3','pt3.mp3','pt4.mp3','pt5.mp3','pt6.mp3']
         queue_index = 0
         return MusicMenu()
 
