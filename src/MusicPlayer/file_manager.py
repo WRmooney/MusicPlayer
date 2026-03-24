@@ -103,25 +103,62 @@ def default_image():
     kivy_core_image = CoreImage(io.BytesIO(data.read()), ext='png')
     return kivy_core_image
 
+def remove_extras(file_names, json_file):
+    print(type(json_file))
+    print(type(json_file["songs"]))
+    key_list = []
+    for key in json_file["songs"]:
+        if json_file["songs"][key]["filename"] in file_names:
+            key_list.append(key)
+    for key in key_list:
+        json_file["songs"].pop(key)
+
 def update_song_database(directory):
     # get JSON data
-    with open('songs.JSON', 'r+') as songs_j:
-        with open('playlists.JSON', 'r+') as playlists_j:
+    with open('songs.JSON', 'r') as songs_j:
+        with open('playlists.JSON', 'r') as playlists_j:
             songs_data = json.load(songs_j)
             playlists_data = json.load(playlists_j)
 
-    # get directory data
-    try:
-        with os.scandir(directory) as entries:
-            song_files = entries
-    except FileNotFoundError:
-        song_files = []
-        print("File not found")
-    except PermissionError:
-        song_files = []
-        print("Permission error")
 
-    # go through JSON entries, update/check
-    for item in songs_data["songs"]:
-        pass
+            # get directory data
+            try:
+                with os.scandir(directory) as entries:
+                    song_files = entries
+                    file_list = []
+                    # go through JSON entries, update/check
+                    for item in songs_data["songs"]:
+                        file_list.append(songs_data["songs"][item]["filename"])
+                    # add non-existent files to JSON
+                    for entry in song_files:
+
+                        if entry.name not in file_list:
+                            songs_data["id"] += 1
+                            info = get_mp3_info(entry.path)
+                            cur_song = {"title": info["title"],
+                                        "artist": info["artist"],
+                                        "duration": info["duration"],
+                                        "filepath": entry.path,
+                                        "filename": entry.name,
+                                        }
+
+                            songs_data["songs"].update({str(songs_data["id"]): cur_song})
+                        else:
+                            file_list.remove(entry.name)
+                    remove_extras(file_list, songs_data)
+
+            except FileNotFoundError:
+                song_files = []
+                print("File not found")
+            except PermissionError:
+                song_files = []
+                print("Permission error")
+
+
+
+            #print(songs_data)
+            with open("songs.JSON", 'w') as songs_j:
+                json.dump(songs_data, songs_j, indent=4)
+
+update_song_database('C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1')
 

@@ -1,5 +1,26 @@
 {
-  "songs": [
-
-  ]
+    "id": 4,
+    "songs": {
+        "1": {
+            "title": "Chase",
+            "artist": "Batta",
+            "duration": 159.24244897959184,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Chase.mp3",
+            "filename": "Chase.mp3"
+        },
+        "2": {
+            "title": "Pase Rock - Old Light (voices from 93 million miles away remix) [Official Audio]",
+            "artist": "Nujabes",
+            "duration": 267.1020408163265,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Old Light.mp3",
+            "filename": "Old Light.mp3"
+        },
+        "3": {
+            "title": "Luv (sic) 12\" Remix",
+            "artist": "Nujabes - Topic",
+            "duration": 297.84816326530614,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\pt1.mp3",
+            "filename": "pt1.mp3"
+        }
+    }
 }
