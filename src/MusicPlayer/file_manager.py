@@ -55,6 +55,22 @@ if it does exist, check all info and update info accordingly
 then, go through the files in directory and add any songs not in the database yet
 
 """
+
+
+def fetch_song_info(song_id):
+    with open("songs.json", "r") as songs_database:
+        songs = json.load(songs_database)
+        info = {
+            "title": songs["songs"][song_id]["title"],
+            "artist": songs["songs"][song_id]["artist"],
+            "duration": songs["songs"][song_id]["duration"],
+            "filepath": songs["songs"][song_id]["filepath"],
+            "filename": songs["songs"][song_id]["filename"],
+        }
+
+    return info
+
+
 def get_mp3_info(filepath):
     # Use mutagen to get info
     try:
@@ -103,15 +119,35 @@ def default_image():
     kivy_core_image = CoreImage(io.BytesIO(data.read()), ext='png')
     return kivy_core_image
 
+def remove_song(song_id, json_file):
+    print(song_id)
+    print(type(song_id))
+    # load playlist JSON
+    with open("playlists.JSON", 'r') as p:
+        playlists = json.load(p)
+
+    # Loop through each playlist
+    for playlist in playlists["playlists"]:
+        print(playlist["name"])
+        print(playlist["songs"])
+        # if the song being removed is in the playlist, remove all instances
+        if song_id in playlist["songs"]:
+            playlist["songs"] = [x for x in playlist["songs"] if x != song_id]
+
+    # finally, remove song from song database
+    json_file["songs"].pop(song_id)
+    with open("playlists.JSON", 'w') as p:
+        json.dump(playlists, p, indent=4)
+
+    # remove all instances of the song from playlists
+
 def remove_extras(file_names, json_file):
-    print(type(json_file))
-    print(type(json_file["songs"]))
     key_list = []
     for key in json_file["songs"]:
         if json_file["songs"][key]["filename"] in file_names:
             key_list.append(key)
     for key in key_list:
-        json_file["songs"].pop(key)
+        remove_song(key, json_file)
 
 def update_song_database(directory):
     # get JSON data
@@ -126,6 +162,7 @@ def update_song_database(directory):
                 with os.scandir(directory) as entries:
                     song_files = entries
                     file_list = []
+                    cur_id = 1
                     # go through JSON entries, update/check
                     for item in songs_data["songs"]:
                         file_list.append(songs_data["songs"][item]["filename"])
@@ -133,7 +170,10 @@ def update_song_database(directory):
                     for entry in song_files:
 
                         if entry.name not in file_list:
-                            songs_data["id"] += 1
+                            print("trying: " + entry.name + " at id: " + str(cur_id))
+                            while str(cur_id) in songs_data["songs"]:
+                                cur_id += 1
+
                             info = get_mp3_info(entry.path)
                             cur_song = {"title": info["title"],
                                         "artist": info["artist"],
@@ -142,7 +182,7 @@ def update_song_database(directory):
                                         "filename": entry.name,
                                         }
 
-                            songs_data["songs"].update({str(songs_data["id"]): cur_song})
+                            songs_data["songs"].update({str(cur_id): cur_song})
                         else:
                             file_list.remove(entry.name)
                     remove_extras(file_list, songs_data)
@@ -154,11 +194,9 @@ def update_song_database(directory):
                 song_files = []
                 print("Permission error")
 
+            # write to the file
+            with open("songs.JSON", 'w') as songs_json:
+                json.dump(songs_data, songs_json, indent=4)
 
 
-            #print(songs_data)
-            with open("songs.JSON", 'w') as songs_j:
-                json.dump(songs_data, songs_j, indent=4)
-
-update_song_database('C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1')
 

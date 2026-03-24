@@ -44,18 +44,20 @@ import file_manager as fm
 #endregion
 
 # important global variables
-directory = 'resources/Test_Resources/'
-loop = False
-queue = []
-queue_index = 0
-current_song_info = {}
-current_song = None
-
-# important functions (make class for later?)
-
-
+with open("preferences.json", 'r') as preferences_json:
+    preferences = json.load(preferences_json)
+    directory = preferences["directory"]
+    loop = preferences["loop"]
+    queue = []
+    queue_index = 0
+    current_song_info = {}
+    current_song = None
 
 
+
+
+
+# player control flow functions
 
 def song_finished(ref):
     global current_song
@@ -194,6 +196,7 @@ class MusicPlayerApp(App):
         Window.set_icon('resources/images/icon.png')
         queue = ['Sidewinder.mp3', 'pt1.mp3','pt2.mp3','pt3.mp3','pt4.mp3','pt5.mp3','pt6.mp3']
         queue_index = 0
+        fm.update_song_database('C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1')
         return MusicMenu()
 
 if __name__ == '__main__':

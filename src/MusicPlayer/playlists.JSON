@@ -1,5 +1,28 @@
 {
-  "playlists": [
-
-  ]
+    "playlists": [
+        {
+            "name": "playlist1",
+            "songs": [
+                "1",
+                "7"
+            ]
+        },
+        {
+            "name": "playlist2",
+            "songs": [
+                "2",
+                "5",
+                "7"
+            ]
+        },
+        {
+            "name": "playlist3",
+            "songs": [
+                "1",
+                "2",
+                "7",
+                "8"
+            ]
+        }
+    ]
 }
