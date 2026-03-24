@@ -1,5 +1,12 @@
 {
     "songs": {
+        "2": {
+            "title": "Chase",
+            "artist": "Batta",
+            "duration": 159.24244897959184,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Chase.mp3",
+            "filename": "Chase.mp3"
+        },
         "1": {
             "title": "Pase Rock - Old Light (voices from 93 million miles away remix) [Official Audio]",
             "artist": "Nujabes",

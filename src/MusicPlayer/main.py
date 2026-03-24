@@ -22,6 +22,7 @@ from kivy.uix.button import Button
 from kivy.core.window import Window
 from kivy.core.image import Image as CoreImage
 from kivy.uix.slider import Slider
+from kivy.uix.screenmanager import ScreenManager, Screen
 
 
 
@@ -40,57 +41,83 @@ import json
 
 # modules
 import file_manager as fm
+import playback_manager as pm
 
 #endregion
 
 # important global variables
-with open("preferences.json", 'r') as preferences_json:
-    preferences = json.load(preferences_json)
-    directory = preferences["directory"]
-    loop = preferences["loop"]
-    queue = []
-    queue_index = 0
-    current_song_info = {}
-    current_song = None
+try:
+    with open('src/MusicPlayer/songs.json', 'r') as songs_j:
+        songs = json.load(songs_j)
+    with open('src/MusicPlayer/preferences.json', 'r') as preferences_json:
+        preferences = json.load(preferences_json)
+        directory = preferences["directory"]
+        loop = preferences["loop"]
+except:
+    print("Error opening JSON files!")
 
 
 
+# add these into preferences.JSON later
+queue = []
+queue_index = 0
+current_song_info = {}
+current_song = None
+sm = ScreenManager()
+
+
+
+"""
+Put pause/play, forward and backword functions into a Song Control Manager class!!!
+Also put the below functions in there! 
+The flow of song playback should continue regardless of what screen is being viewed!
+
+Should have next and previous song loaded
+
+"""
 
 
 # player control flow functions
+
 
 def song_finished(ref):
     global current_song
     global queue
     global queue_index
     global loop
+    global songs
+
 
     if not loop:
-        if queue_index == len(queue)-1:
-            queue_index = 0
-        else:
-            queue_index += 1
+        while True:
+            if queue_index == len(queue)-1:
+                queue_index = 0
+            else:
+                queue_index += 1
+            if queue[queue_index] in songs["songs"]:
+                break
+
     play_song(queue[queue_index], ref, current_song.get_pause())
 
-def play_song(songname, ref, playing):
+def play_song(song_id, ref, playing):
     global current_song
     global directory
+    global songs
     MediaPlayer.close_player(current_song)
-    filepath = directory + songname
-    current_song = MediaPlayer(filepath,
+
+    current_song = MediaPlayer(songs["songs"][song_id]["filepath"],
                 ff_opts={"paused": playing},
                 ss=0.0)
-    update_info(directory, queue[queue_index], ref)
+    update_info(queue[queue_index], ref)
 
-def update_info(dir, name, ref):
+def update_info(song_id, ref):
     global current_song_info
-    current_song_info = fm.get_mp3_info(dir + name)
-    current_song_info['filepath'] = dir + name
+    current_song_info = fm.fetch_song_info(song_id)
     ref.ids.duration_slider.value = 0
     ref.ids.duration_label.text = time.strftime('%M:%S', time.gmtime(current_song_info['duration']))
     ref.ids.song_title.text = current_song_info['title']
     ref.ids.artist_name.text = current_song_info['artist']
-    ref.ids.album_cover.texture = fm.get_album_cover(dir + name).texture
+    ref.ids.album_cover.texture = fm.get_album_cover(current_song_info["filepath"]).texture
     ref.ids.duration_slider.max = current_song_info['duration']
     ref.pause_by_slider = False
     ref.pause_by_button = False
@@ -166,10 +193,15 @@ class MusicMenu(BoxLayout):
     def forward_btn_press(self):
         global queue
         global queue_index
-        if queue_index == len(queue) - 1:
-            queue_index = 0
-        else:
-            queue_index += 1
+        while True:
+            if queue_index == len(queue) - 1:
+                queue_index = 0
+            else:
+                queue_index += 1
+            if queue[queue_index] in songs["songs"]:
+                break
+
+
 
         play_song(queue[queue_index], self, current_song.get_pause())
 
@@ -179,10 +211,13 @@ class MusicMenu(BoxLayout):
         global queue_index
         global loop
 
-        if queue_index == 0:
-            queue_index = len(queue)-1
-        else:
-            queue_index -= 1
+        while True:
+            if queue_index == 0:
+                queue_index = len(queue)-1
+            else:
+                queue_index -= 1
+            if queue[queue_index] in songs["songs"]:
+                break
         play_song(queue[queue_index], self, current_song.get_pause())
 
     def shuffle_queue(self):
@@ -194,7 +229,7 @@ class MusicPlayerApp(App):
         global queue
         global queue_index
         Window.set_icon('resources/images/icon.png')
-        queue = ['Sidewinder.mp3', 'pt1.mp3','pt2.mp3','pt3.mp3','pt4.mp3','pt5.mp3','pt6.mp3']
+        queue = ["1","2","3","4","5"]
         queue_index = 0
         fm.update_song_database('C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1')
         return MusicMenu()

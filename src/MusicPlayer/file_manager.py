@@ -58,7 +58,7 @@ then, go through the files in directory and add any songs not in the database ye
 
 
 def fetch_song_info(song_id):
-    with open("songs.json", "r") as songs_database:
+    with open("src/MusicPlayer/songs.json", "r") as songs_database:
         songs = json.load(songs_database)
         info = {
             "title": songs["songs"][song_id]["title"],
@@ -69,7 +69,6 @@ def fetch_song_info(song_id):
         }
 
     return info
-
 
 def get_mp3_info(filepath):
     # Use mutagen to get info
@@ -121,9 +120,9 @@ def default_image():
 
 def remove_song(song_id, json_file):
     print(song_id)
-    print(type(song_id))
+    print(json_file["songs"][song_id]["title"])
     # load playlist JSON
-    with open("playlists.JSON", 'r') as p:
+    with open("src/MusicPlayer/playlists.JSON", 'r') as p:
         playlists = json.load(p)
 
     # Loop through each playlist
@@ -136,13 +135,14 @@ def remove_song(song_id, json_file):
 
     # finally, remove song from song database
     json_file["songs"].pop(song_id)
-    with open("playlists.JSON", 'w') as p:
+    with open("src/MusicPlayer/playlists.JSON", 'w') as p:
         json.dump(playlists, p, indent=4)
 
     # remove all instances of the song from playlists
 
 def remove_extras(file_names, json_file):
     key_list = []
+    print("removing extras")
     for key in json_file["songs"]:
         if json_file["songs"][key]["filename"] in file_names:
             key_list.append(key)
@@ -151,8 +151,9 @@ def remove_extras(file_names, json_file):
 
 def update_song_database(directory):
     # get JSON data
-    with open('songs.JSON', 'r') as songs_j:
-        with open('playlists.JSON', 'r') as playlists_j:
+    print("updating songs database")
+    with open('src/MusicPlayer/songs.JSON', 'r') as songs_j:
+        with open('src/MusicPlayer/playlists.JSON', 'r') as playlists_j:
             songs_data = json.load(songs_j)
             playlists_data = json.load(playlists_j)
 
@@ -195,7 +196,7 @@ def update_song_database(directory):
                 print("Permission error")
 
             # write to the file
-            with open("songs.JSON", 'w') as songs_json:
+            with open("src/MusicPlayer/songs.JSON", 'w') as songs_json:
                 json.dump(songs_data, songs_json, indent=4)
 
 
