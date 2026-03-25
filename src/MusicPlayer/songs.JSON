@@ -1,6 +1,13 @@
 {
     "songs": {
-        "4": {
+        "1": {
+            "title": "Nujabes - Modal Soul (feat. Uyama Hiroto) [Official Audio]",
+            "artist": "Nujabes",
+            "duration": 281.10367346938773,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Modal Soul.mp3",
+            "filename": "Modal Soul.mp3"
+        },
+        "3": {
             "title": "Luv (sic) 12\" Remix",
             "artist": "Nujabes - Topic",
             "duration": 297.84816326530614,
@@ -8,53 +15,18 @@
             "filename": "pt1.mp3"
         },
         "5": {
+            "title": "Luv (sic) pt6 Uyama Hiroto Remix",
+            "artist": "Nujabes - Topic",
+            "duration": 278.8048979591837,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\pt6.mp3",
+            "filename": "pt6.mp3"
+        },
+        "6": {
             "title": "Ready To Fly",
             "artist": "Masayoshi Takanaka - Topic",
             "duration": 417.0710204081633,
             "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\READY TO FLY.mp3",
             "filename": "READY TO FLY.mp3"
-        },
-        "3": {
-            "title": "Nujabes - Modal Soul (feat. Uyama Hiroto) [Official Audio]",
-            "artist": "Nujabes",
-            "duration": 281.10367346938773,
-            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Modal Soul.mp3",
-            "filename": "Modal Soul.mp3"
-        },
-        "7": {
-            "title": "Luv (sic) pt2 Acoustica",
-            "artist": "Nujabes - Topic",
-            "duration": 393.53469387755104,
-            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\pt2.mp3",
-            "filename": "pt2.mp3"
-        },
-        "8": {
-            "title": "Luv (sic.) pt3 Ta-ku Remix",
-            "artist": "Nujabes - Topic",
-            "duration": 296.15020408163264,
-            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\pt3.mp3",
-            "filename": "pt3.mp3"
-        },
-        "9": {
-            "title": "Luv (sic) pt4 LASTorder Remix",
-            "artist": "Nujabes - Topic",
-            "duration": 278.5436734693877,
-            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\pt4.mp3",
-            "filename": "pt4.mp3"
-        },
-        "10": {
-            "title": "Luv (sic) pt5 Jumpster Remix",
-            "artist": "Nujabes - Topic",
-            "duration": 279.0138775510204,
-            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\pt5.mp3",
-            "filename": "pt5.mp3"
-        },
-        "2": {
-            "title": "Sidewinder",
-            "artist": "Avenged Sevenfold",
-            "duration": 421.7730612244898,
-            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Sidewinder.mp3",
-            "filename": "Sidewinder.mp3"
         }
     }
 }

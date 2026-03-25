@@ -75,6 +75,8 @@ of that class.
 
 Playlist view!!!
 
+Catch if there are NO SONGS!!!
+
 Put pause/play, forward and backword functions into a Song Control Manager class!!!
 Also put the below functions in there! 
 The flow of song playback should continue regardless of what screen is being viewed!
