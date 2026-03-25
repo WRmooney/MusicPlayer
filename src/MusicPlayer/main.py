@@ -96,13 +96,20 @@ def song_finished(ref):
                 queue_index += 1
             if queue[queue_index] in songs["songs"]:
                 break
-
-    play_song(queue[queue_index], ref, current_song.get_pause())
+    try:
+        play_song(queue[queue_index], ref, current_song.get_pause())
+    except AttributeError:
+        play_song(queue[queue_index], ref, True)
 
 def play_song(song_id, ref, playing):
     global current_song
     global directory
     global songs
+
+    # song_finished, forward_btn, back_btn already catch missing files, this is for the first song in queue
+    if queue[queue_index] not in songs["songs"]:
+        song_finished(ref)
+        return
     MediaPlayer.close_player(current_song)
 
     current_song = MediaPlayer(songs["songs"][song_id]["filepath"],
@@ -228,10 +235,16 @@ class MusicPlayerApp(App):
     def build(self):
         global queue
         global queue_index
+        global songs
         Window.set_icon('resources/images/icon.png')
         queue = ["1","2","3","4","5"]
         queue_index = 0
         fm.update_song_database('C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1')
+        try:
+            with open('src/MusicPlayer/songs.json', 'r') as songs_j:
+                songs = json.load(songs_j)
+        except:
+            print("Uh oh! Something went wrong in build()!")
         return MusicMenu()
 
 if __name__ == '__main__':

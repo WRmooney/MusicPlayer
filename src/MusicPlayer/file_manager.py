@@ -147,6 +147,7 @@ def remove_extras(file_names, json_file):
         if json_file["songs"][key]["filename"] in file_names:
             key_list.append(key)
     for key in key_list:
+        print("Song Removed!")
         remove_song(key, json_file)
 
 def update_song_database(directory):
@@ -182,11 +183,12 @@ def update_song_database(directory):
                                         "filepath": entry.path,
                                         "filename": entry.name,
                                         }
-
+                            print("Placed: " + entry.name + " at id: " + str(cur_id))
                             songs_data["songs"].update({str(cur_id): cur_song})
                         else:
                             file_list.remove(entry.name)
-                    remove_extras(file_list, songs_data)
+                    if len(file_list) != 0:
+                        remove_extras(file_list, songs_data)
 
             except FileNotFoundError:
                 song_files = []

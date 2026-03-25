@@ -3,7 +3,6 @@
         {
             "name": "playlist1",
             "songs": [
-                "1",
                 "7"
             ]
         },
@@ -17,7 +16,6 @@
         {
             "name": "playlist3",
             "songs": [
-                "1",
                 "7",
                 "8"
             ]

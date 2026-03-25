@@ -1,12 +1,5 @@
 {
     "songs": {
-        "1": {
-            "title": "Pase Rock - Old Light (voices from 93 million miles away remix) [Official Audio]",
-            "artist": "Nujabes",
-            "duration": 267.1020408163265,
-            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Old Light.mp3",
-            "filename": "Old Light.mp3"
-        },
         "4": {
             "title": "Luv (sic) 12\" Remix",
             "artist": "Nujabes - Topic",
@@ -20,13 +13,6 @@
             "duration": 417.0710204081633,
             "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\READY TO FLY.mp3",
             "filename": "READY TO FLY.mp3"
-        },
-        "6": {
-            "title": "Sidewinder",
-            "artist": "Avenged Sevenfold",
-            "duration": 421.7730612244898,
-            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Sidewinder.mp3",
-            "filename": "Sidewinder.mp3"
         },
         "3": {
             "title": "Nujabes - Modal Soul (feat. Uyama Hiroto) [Official Audio]",
@@ -63,12 +49,12 @@
             "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\pt5.mp3",
             "filename": "pt5.mp3"
         },
-        "11": {
-            "title": "Luv (sic) pt6 Uyama Hiroto Remix",
-            "artist": "Nujabes - Topic",
-            "duration": 278.8048979591837,
-            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\pt6.mp3",
-            "filename": "pt6.mp3"
+        "2": {
+            "title": "Sidewinder",
+            "artist": "Avenged Sevenfold",
+            "duration": 421.7730612244898,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Sidewinder.mp3",
+            "filename": "Sidewinder.mp3"
         }
     }
 }
