@@ -67,12 +67,20 @@ sm = ScreenManager()
 
 
 
-"""
+""" 
+*** NOTES ***
+
+Need to make that helper class to manage the playback on its own, buttons simply call the functions
+of that class.
+
+Playlist view!!!
+
 Put pause/play, forward and backword functions into a Song Control Manager class!!!
 Also put the below functions in there! 
 The flow of song playback should continue regardless of what screen is being viewed!
 
 Should have next and previous song loaded
+
 
 """
 
