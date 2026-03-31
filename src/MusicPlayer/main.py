@@ -151,12 +151,15 @@ class CustomSlider(Slider):
         # If not, ignore
         return False
 
-class MusicMenu(BoxLayout):
+class PlaybackManager:
+    pass
+
+class MusicMenu(Screen):
 
     def __init__(self, **kwargs):
         super(MusicMenu, self).__init__(**kwargs)
-        Clock.schedule_interval(self.update, 0.1)
-        play_song(queue[0], self, True)
+        #Clock.schedule_interval(self.update, 0.1)
+        #play_song(queue[0], self, True)
 
     def update(self, *args):
         global current_song_info
@@ -241,21 +244,35 @@ class MusicMenu(BoxLayout):
         global queue
         random.shuffle(queue)
 
+class MainMenu(Screen):
+    def __init__(self, **kwargs):
+        super(MainMenu, self).__init__(**kwargs)
+
+
 class MusicPlayerApp(App):
     def build(self):
         global queue
         global queue_index
         global songs
+        global sm
+
         Window.set_icon('resources/images/icon.png')
+
+        sm.add_widget(MusicMenu(name="MusicMenu"))
+        sm.add_widget(MainMenu(name="MainMenu"))
+        sm.current = 'MainMenu'
+
         queue = ["1","2","3","4","5"]
         queue_index = 0
+
         fm.update_song_database('C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1')
         try:
             with open('src/MusicPlayer/songs.json', 'r') as songs_j:
                 songs = json.load(songs_j)
         except:
             print("Uh oh! Something went wrong in build()!")
-        return MusicMenu()
+
+        return sm
 
 if __name__ == '__main__':
     MusicPlayerApp().run()

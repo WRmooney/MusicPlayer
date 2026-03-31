@@ -4,125 +4,160 @@
 #:set btn_color 162/255.0,123/255.0,176/255.0,1
 
 <MusicMenu>:
-    orientation: 'vertical'
-    size_hint: (1,1)
-    # color
-    canvas.before:
-        Color:
-            rgba:bg_color
-        Rectangle:
-            pos:self.pos
-            size:self.size
+    name: 'MusicMenu'
 
-    # back button
-    AnchorLayout:
-        size_hint_y: 0.1
-        anchor_x: "left"
-        anchor_y: "top"
-        padding: [25,25,0,0]
-        Button:
-            text: "Back"
-            size_hint_y: 0.8
-            size_hint_x: 0.1
-            background_normal: ''
-            background_color: btn_color
-
-    # album cover
     BoxLayout:
-        id: album_cover_container
-        size_hint_y: 0.5
-        width: self.height
-        pos_hint: {'center_x' : 0.5, 'center_y' : 0.5}
+        orientation: 'vertical'
+        size_hint: (1,1)
+        # color
         canvas.before:
             Color:
                 rgba:bg_color
             Rectangle:
                 pos:self.pos
                 size:self.size
-        Image:
-            size: (450,450)
-            id: album_cover
-            fit_mode: "contain"
+
+        # back button
+        AnchorLayout:
+            size_hint_y: 0.1
+            anchor_x: "left"
+            anchor_y: "top"
+            padding: [25,25,0,0]
+            Button:
+                text: "Back"
+                size_hint_y: 0.8
+                size_hint_x: 0.1
+                background_normal: ''
+                background_color: btn_color
+
+        # album cover
+        BoxLayout:
+            id: album_cover_container
+            size_hint_y: 0.5
             width: self.height
+            pos_hint: {'center_x' : 0.5, 'center_y' : 0.5}
+            canvas.before:
+                Color:
+                    rgba:bg_color
+                Rectangle:
+                    pos:self.pos
+                    size:self.size
+            Image:
+                size: (450,450)
+                id: album_cover
+                fit_mode: "contain"
+                width: self.height
 
-
-    # song info
-    Label:
-        id: song_title
-        size_hint_y: 0.05
-        text: "Song Title"
-
-    Label:
-        id: artist_name
-        size_hint_y: 0.05
-        text: "Artist"
-
-
-
-
-
-    # song duration and bar
-    BoxLayout:
-        size_hint_y: 0.1
-        size_hint_x: 1
-        padding: [200,0,200,0]
+        # song info
+        Label:
+            id: song_title
+            size_hint_y: 0.05
+            text: "Song Title"
 
         Label:
-            id: time_stamp_label
-            size_hint_x: 0.1
-            text: "0:00"
+            id: artist_name
+            size_hint_y: 0.05
+            text: "Artist"
 
-        CustomSlider:
-            id: duration_slider
-            value_track: True
-            value_track_color: 0,0,0,1
-            size_hint_x: 0.8
-            cursor_size: (30, 30)
-            value: 0
-            on_touch_up: root.slider_up()
+        # song duration and bar
+        BoxLayout:
+            size_hint_y: 0.1
+            size_hint_x: 1
+            padding: [200,0,200,0]
 
-        Label:
-            id: duration_label
-            size_hint_x: 0.1
-            text: "0:00"
+            Label:
+                id: time_stamp_label
+                size_hint_x: 0.1
+                text: "0:00"
 
+            CustomSlider:
+                id: duration_slider
+                value_track: True
+                value_track_color: 0,0,0,1
+                size_hint_x: 0.8
+                cursor_size: (30, 30)
+                value: 0
+                on_touch_up: root.slider_up()
 
-    # buttons
+            Label:
+                id: duration_label
+                size_hint_x: 0.1
+                text: "0:00"
+
+        # buttons
+        BoxLayout:
+            size_hint_y: 0.2
+            orientation: 'horizontal'
+            spacing: 100
+            padding: [200,50,200,50]
+
+            Button:
+                id: shuffle_btn
+                on_press: root.shuffle_queue()
+                text: "shuffle"
+                background_normal: ''
+                background_color: btn_color
+            Button:
+                id: reverse_btn
+                on_press: root.song_back()
+                text: "back"
+                background_normal: ''
+                background_color: btn_color
+            Button:
+                id: play_btn
+                on_press: root.play_btn_press()
+                text: "Play"
+                background_normal: ''
+                background_color: btn_color
+            Button:
+                id: forward_btn
+                on_press: root.forward_btn_press()
+                text: "forward"
+                background_normal: ''
+                background_color: btn_color
+            Button:
+                id: loop_btn
+                on_press: root.toggle_loop()
+                text: "loop: off"
+                background_normal: ''
+                background_color: btn_color
+
+<MainMenu>:
+    name: 'MainMenu'
+
     BoxLayout:
-        size_hint_y: 0.2
-        orientation: 'horizontal'
-        spacing: 100
-        padding: [200,50,200,50]
+        orientation: 'vertical'
+        size_hint: (1,1)
 
-        Button:
-            id: shuffle_btn
-            on_press: root.shuffle_queue()
-            text: "shuffle"
-            background_normal: ''
-            background_color: btn_color
-        Button:
-            id: reverse_btn
-            on_press: root.song_back()
-            text: "back"
-            background_normal: ''
-            background_color: btn_color
-        Button:
-            id: play_btn
-            on_press: root.play_btn_press()
-            text: "Play"
-            background_normal: ''
-            background_color: btn_color
-        Button:
-            id: forward_btn
-            on_press: root.forward_btn_press()
-            text: "forward"
-            background_normal: ''
-            background_color: btn_color
-        Button:
-            id: loop_btn
-            on_press: root.toggle_loop()
-            text: "loop: off"
-            background_normal: ''
-            background_color: btn_color
+        #color
+        canvas.before:
+            Color:
+                rgba:bg_color
+            Rectangle:
+                pos:self.pos
+                size:self.size
 
+        BoxLayout:
+            size_hint_y: 0.2
+            orientation: 'horizontal'
+
+            ToggleButton:
+                size_hint_x: 0.5
+                text: 'Songs'
+                group: 'mainmenutabs'
+                allow_no_selection: False
+                state: 'down'
+
+            ToggleButton:
+                size_hint_x: 0.5
+                text: 'Playlists'
+                group: 'mainmenutabs'
+                allow_no_selection: False
+
+        ScrollView:
+            size_hint_y: 0.7
+
+        BoxLayout:
+            size_hint_y: 0.1
+            orientation: 'horizontal'
 
