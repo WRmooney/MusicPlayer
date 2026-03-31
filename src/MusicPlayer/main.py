@@ -1,5 +1,7 @@
 # kivy version requirement
 import kivy
+from kivy.uix.recycleview.views import RecycleDataViewBehavior
+
 kivy.require('2.3.1') # replace with your current kivy version !
 
 #region
@@ -12,11 +14,11 @@ os.environ["KIVY_AUDIO"] = "ffpyplayer"
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
-from kivy.properties import NumericProperty, ReferenceListProperty, ObjectProperty
+from kivy.properties import NumericProperty, ReferenceListProperty, ObjectProperty, StringProperty, DictProperty
 from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.anchorlayout import AnchorLayout
+from kivy.uix.stacklayout import StackLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.core.window import Window
@@ -83,7 +85,9 @@ The flow of song playback should continue regardless of what screen is being vie
 
 Should have next and previous song loaded
 
-
+***THOUGHT
+Instead of MusicMenu updating on its own (including when on other screens),
+how about PlaybackManager doing the updates, and also only if its on the MusicMenu screen?
 """
 
 
@@ -150,6 +154,23 @@ class CustomSlider(Slider):
             return super(CustomSlider, self).on_touch_down(touch)
         # If not, ignore
         return False
+
+# class to display song and info in songs/playlists view
+class Song_Row(RecycleDataViewBehavior, BoxLayout):
+    info = DictProperty({})
+    id = StringProperty('')
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def refresh_view_attrs(self, rv, index, data):
+        """
+        Optional: This method is called every time the widget
+        is recycled with new data.
+        """
+        return super(Song_Row, self).refresh_view_attrs(rv, index, data)
+
+
 
 class PlaybackManager:
     pass
@@ -247,6 +268,17 @@ class MusicMenu(Screen):
 class MainMenu(Screen):
     def __init__(self, **kwargs):
         super(MainMenu, self).__init__(**kwargs)
+        self.display_songs()
+
+    def display_songs(self):
+        global songs
+
+        # sort by title in alphabetic order
+        key_list = sorted(list(songs["songs"].keys()), key=lambda x: songs["songs"][x]["title"])
+        print(key_list)
+        # now we have a sorted list of each song as a dictionary, put it in the recycle view
+        self.ids.main_song_list.data = [{'info': songs["songs"][key], 'id': key} for key in key_list]
+
 
 
 class MusicPlayerApp(App):
@@ -258,10 +290,6 @@ class MusicPlayerApp(App):
 
         Window.set_icon('resources/images/icon.png')
 
-        sm.add_widget(MusicMenu(name="MusicMenu"))
-        sm.add_widget(MainMenu(name="MainMenu"))
-        sm.current = 'MainMenu'
-
         queue = ["1","2","3","4","5"]
         queue_index = 0
 
@@ -271,6 +299,10 @@ class MusicPlayerApp(App):
                 songs = json.load(songs_j)
         except:
             print("Uh oh! Something went wrong in build()!")
+
+        sm.add_widget(MusicMenu(name="MusicMenu"))
+        sm.add_widget(MainMenu(name="MainMenu"))
+        sm.current = 'MainMenu'
 
         return sm
 

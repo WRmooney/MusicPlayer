@@ -48,6 +48,27 @@
             "duration": 421.7730612244898,
             "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Sidewinder.mp3",
             "filename": "Sidewinder.mp3"
+        },
+        "8": {
+            "title": "Luv (sic.) pt3 Ta-ku Remix",
+            "artist": "Nujabes - Topic",
+            "duration": 296.15020408163264,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\pt3.mp3",
+            "filename": "pt3.mp3"
+        },
+        "9": {
+            "title": "Luv (sic) pt4 LASTorder Remix",
+            "artist": "Nujabes - Topic",
+            "duration": 278.5436734693877,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\pt4.mp3",
+            "filename": "pt4.mp3"
+        },
+        "10": {
+            "title": "Luv (sic) pt5 Jumpster Remix",
+            "artist": "Nujabes - Topic",
+            "duration": 279.0138775510204,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\pt5.mp3",
+            "filename": "pt5.mp3"
         }
     }
 }

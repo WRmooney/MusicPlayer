@@ -1,5 +1,7 @@
 #:kivy 2.3.1
 
+#:import time time
+
 #:set bg_color 142/255.0,103/255.0,156/255.0,1
 #:set btn_color 162/255.0,123/255.0,176/255.0,1
 
@@ -122,6 +124,25 @@
                 background_normal: ''
                 background_color: btn_color
 
+<Song_Row>:
+    height: 100
+    orientation: 'horizontal'
+    Button:
+        text: 'Play'
+        size_hint_x: 0.1
+    Label:
+        text: root.info.get('title', 'Unknown Song')
+        size_hint_x: 0.4
+    Label:
+        text: root.info.get('artist', 'Unknown Artist')
+        size_hint_x: 0.3
+    Label:
+        text: time.strftime('%M:%S', time.gmtime(root.info.get('duration', 0)))
+        size_hint_x: 0.1
+    Button:
+        text: '...'
+        size_hint_x: 0.1
+
 <MainMenu>:
     name: 'MainMenu'
 
@@ -154,10 +175,40 @@
                 group: 'mainmenutabs'
                 allow_no_selection: False
 
-        ScrollView:
+        RecycleView:
+            id: main_song_list
             size_hint_y: 0.7
+            do_scroll_x: False
+            do_scroll_y: True
+            viewclass: 'Song_Row'
+            RecycleBoxLayout:
+                default_size: None, dp(48)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
 
         BoxLayout:
             size_hint_y: 0.1
             orientation: 'horizontal'
+
+            Button:
+                size_hint_x: 0.1
+                text: 'Back'
+
+            Label:
+                size_hint_x: 0.6
+                text: 'Song Info'
+
+            Button:
+                size_hint_x: 0.1
+                text: '<<'
+
+            Button:
+                size_hint_x: 0.1
+                text: '||'
+
+            Button:
+                size_hint_x: 0.1
+                text: '>>'
 
