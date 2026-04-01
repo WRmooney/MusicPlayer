@@ -14,7 +14,7 @@ os.environ["KIVY_AUDIO"] = "ffpyplayer"
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
-from kivy.properties import NumericProperty, ReferenceListProperty, ObjectProperty, StringProperty, DictProperty
+from kivy.properties import NumericProperty, ReferenceListProperty, ObjectProperty, StringProperty, DictProperty, ListProperty, NumericProperty
 from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.uix.gridlayout import GridLayout
@@ -51,6 +51,8 @@ import playback_manager as pm
 try:
     with open('src/MusicPlayer/songs.json', 'r') as songs_j:
         songs = json.load(songs_j)
+    with open('src/MusicPlayer/playlists.json', 'r') as playlists_j:
+        playlists = json.load(playlists_j)
     with open('src/MusicPlayer/preferences.json', 'r') as preferences_json:
         preferences = json.load(preferences_json)
         directory = preferences["directory"]
@@ -85,9 +87,10 @@ The flow of song playback should continue regardless of what screen is being vie
 
 Should have next and previous song loaded
 
-***THOUGHT
 Instead of MusicMenu updating on its own (including when on other screens),
 how about PlaybackManager doing the updates, and also only if its on the MusicMenu screen?
+
+Integrate song_count and total_length into playlist json and database update on start
 """
 
 
@@ -165,12 +168,40 @@ class Song_Row(RecycleDataViewBehavior, BoxLayout):
 
     def refresh_view_attrs(self, rv, index, data):
         """
-        Optional: This method is called every time the widget
+        This method is called every time the widget
         is recycled with new data.
         """
         return super(Song_Row, self).refresh_view_attrs(rv, index, data)
 
+    def on_info(self, instance, value):
+        self.ids.sr_title.text = value.get('title', 'Empty')
+        self.ids.sr_artist.text = value.get('artist', 'Empty')
+        self.ids.sr_duration.text = time.strftime('%M:%S', time.gmtime(value.get('duration', 0)))
 
+# class to display song and info in songs/playlists view
+class Playlist_Row(RecycleDataViewBehavior, BoxLayout):
+    name = StringProperty('')
+    song_list = ListProperty([])
+    song_count = NumericProperty()
+    total_length = NumericProperty()
+
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def refresh_view_attrs(self, rv, index, data):
+        """
+        This method is called every time the widget
+        is recycled with new data.
+        """
+        return super(Playlist_Row, self).refresh_view_attrs(rv, index, data)
+
+    def on_info(self, instance, value):
+        print(f"UI update triggered for: {value.get('name')}")
+
+        self.ids.pr_name.text = value.get('name', 'Empty')
+        self.ids.pr_count.text = self.song_count
+        self.ids.pr_duration.text = time.strftime('%M:%S', time.gmtime(self.total_length))
 
 class PlaybackManager:
     pass
@@ -268,16 +299,54 @@ class MusicMenu(Screen):
 class MainMenu(Screen):
     def __init__(self, **kwargs):
         super(MainMenu, self).__init__(**kwargs)
-        self.display_songs()
+        self.update_tab()
 
     def display_songs(self):
         global songs
 
         # sort by title in alphabetic order
         key_list = sorted(list(songs["songs"].keys()), key=lambda x: songs["songs"][x]["title"])
-        print(key_list)
+
         # now we have a sorted list of each song as a dictionary, put it in the recycle view
         self.ids.main_song_list.data = [{'info': songs["songs"][key], 'id': key} for key in key_list]
+        print([{'info': songs["songs"][key], 'id': key} for key in key_list])
+
+    def display_playlists(self):
+        global playlists
+
+        # sort by playlist title in alphabetic order
+        playlists_sorted = sorted(playlists["playlists"], key=lambda playlist: playlist["name"])
+
+
+        self.ids.main_song_list.data = [{'name': playlists_sorted[i]["name"],
+                                         'song_list': playlists_sorted[i]["songs"],
+                                         'song_count': playlists_sorted[i]["song_count"],
+                                         'total_length': playlists_sorted[i]["total_length"]}
+                                        for i in range(len(playlists_sorted))]
+        print([{'name': playlists_sorted[i]["name"],
+                'song_list': playlists_sorted[i]["songs"],
+                'song_count': playlists_sorted[i]["song_count"],
+                'total_length': playlists_sorted[i]["total_length"]}
+               for i in range(len(playlists_sorted))])
+
+
+    def update_tab(self):
+        if self.ids.main_song_list.viewclass == Song_Row:
+            self.display_songs()
+        elif self.ids.main_song_list.viewclass == Playlist_Row:
+            self.display_playlists()
+        else:
+            print("Viewclass is NOT Song_Row or Playlist_Row!")
+        self.ids.main_song_list.scroll_y = 1
+
+    def songs_tab_btn(self):
+        self.ids.main_song_list.viewclass = 'Song_Row'
+        self.update_tab()
+
+    def playlists_tab_btn(self):
+        self.ids.main_song_list.viewclass = 'Playlist_Row'
+        self.update_tab()
+
 
 
 
@@ -286,6 +355,7 @@ class MusicPlayerApp(App):
         global queue
         global queue_index
         global songs
+        global playlists
         global sm
 
         Window.set_icon('resources/images/icon.png')
@@ -297,6 +367,8 @@ class MusicPlayerApp(App):
         try:
             with open('src/MusicPlayer/songs.json', 'r') as songs_j:
                 songs = json.load(songs_j)
+            with open('src/MusicPlayer/playlists.json', 'r') as playlists_j:
+                playlists = json.load(playlists_j)
         except:
             print("Uh oh! Something went wrong in build()!")
 

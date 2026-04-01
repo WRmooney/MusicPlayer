@@ -4,6 +4,8 @@
 
 #:set bg_color 142/255.0,103/255.0,156/255.0,1
 #:set btn_color 162/255.0,123/255.0,176/255.0,1
+#:set dark1 132/255.0,93/255.0,146/255.0,1
+#:set dark2 102/255.0,63/255.0,116/255.0,1
 
 <MusicMenu>:
     name: 'MusicMenu'
@@ -130,18 +132,61 @@
     Button:
         text: 'Play'
         size_hint_x: 0.1
+        size_hint_y: 0.95
+        background_normal: ''
+        background_color: btn_color
     Label:
+        id: sr_title
         text: root.info.get('title', 'Unknown Song')
+        text_size: self.size
+        halign: 'left'
+        valign: 'middle'
         size_hint_x: 0.4
     Label:
+        id: sr_artist
         text: root.info.get('artist', 'Unknown Artist')
         size_hint_x: 0.3
     Label:
+        id: sr_duration
         text: time.strftime('%M:%S', time.gmtime(root.info.get('duration', 0)))
         size_hint_x: 0.1
     Button:
         text: '...'
         size_hint_x: 0.1
+        size_hint_y: 0.95
+        background_normal: ''
+        background_color: btn_color
+
+<Playlist_Row>:
+    height: 100
+    orientation: "horizontal"
+    Button:
+        text: 'Play'
+        size_hint_x: 0.1
+        size_hint_y: 0.95
+        background_normal: ''
+        background_color: btn_color
+    Label:
+        id: pr_name
+        text: root.name
+        text_size: self.size
+        halign: 'left'
+        valign: 'middle'
+        size_hint_x: 0.4
+    Label:
+        id: pr_count
+        text: str(root.song_count) + ' songs'
+        size_hint_x: 0.3
+    Label:
+        id: pr_duration
+        text: time.strftime('%M:%S', time.gmtime(root.total_length))
+        size_hint_x: 0.1
+    Button:
+        text: '...'
+        size_hint_x: 0.1
+        size_hint_y: 0.95
+        background_normal: ''
+        background_color: btn_color
 
 <MainMenu>:
     name: 'MainMenu'
@@ -167,20 +212,28 @@
                 text: 'Songs'
                 group: 'mainmenutabs'
                 allow_no_selection: False
-                state: 'down'
+                on_press: root.songs_tab_btn()
+                background_normal: ''
+                background_down: ''
+                background_color: dark1 if self.state == 'normal' else dark2
 
             ToggleButton:
                 size_hint_x: 0.5
                 text: 'Playlists'
                 group: 'mainmenutabs'
+                state: 'down'
                 allow_no_selection: False
+                on_press: root.playlists_tab_btn()
+                background_normal: ''
+                background_down: ''
+                background_color: dark1 if self.state == 'normal' else dark2
 
         RecycleView:
             id: main_song_list
             size_hint_y: 0.7
             do_scroll_x: False
             do_scroll_y: True
-            viewclass: 'Song_Row'
+            viewclass: 'Playlist_Row'
             RecycleBoxLayout:
                 default_size: None, dp(48)
                 default_size_hint: 1, None
@@ -195,20 +248,34 @@
             Button:
                 size_hint_x: 0.1
                 text: 'Back'
+                background_normal: ''
+                background_color: dark1
 
             Label:
                 size_hint_x: 0.6
                 text: 'Song Info'
+                canvas.before:
+                    Color:
+                        rgba:dark1
+                    Rectangle:
+                        pos:self.pos
+                        size:self.size
 
             Button:
                 size_hint_x: 0.1
                 text: '<<'
+                background_normal: ''
+                background_color: dark1
 
             Button:
                 size_hint_x: 0.1
                 text: '||'
+                background_normal: ''
+                background_color: dark1
 
             Button:
                 size_hint_x: 0.1
                 text: '>>'
+                background_normal: ''
+                background_color: dark1
 

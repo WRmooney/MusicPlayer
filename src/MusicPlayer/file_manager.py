@@ -152,7 +152,6 @@ def remove_extras(file_names, json_file):
 
 def update_song_database(directory):
     # get JSON data
-    print("updating songs database")
     with open('src/MusicPlayer/songs.JSON', 'r') as songs_j:
         with open('src/MusicPlayer/playlists.JSON', 'r') as playlists_j:
             songs_data = json.load(songs_j)
@@ -197,9 +196,24 @@ def update_song_database(directory):
                 song_files = []
                 print("Permission error")
 
+            # update playlists
+            for entry in playlists_data["playlists"]:
+                entry["song_count"], entry["total_length"] = get_playlist_length(songs_data, entry)
+
             # write to the file
             with open("src/MusicPlayer/songs.JSON", 'w') as songs_json:
                 json.dump(songs_data, songs_json, indent=4)
+            with open("src/MusicPlayer/playlists.JSON", 'w') as playlists_json:
+                json.dump(playlists_data, playlists_json, indent=4)
+
+def get_playlist_length(songs, playlist):
+    song_count = 0
+    total_length = 0
+    for value in playlist["songs"]:
+        if value in songs["songs"]:
+            song_count += 1
+            total_length += songs["songs"][value]["duration"]
+    return song_count, total_length
 
 
 
