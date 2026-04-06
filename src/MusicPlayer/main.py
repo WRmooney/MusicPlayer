@@ -25,6 +25,7 @@ from kivy.core.window import Window
 from kivy.core.image import Image as CoreImage
 from kivy.uix.slider import Slider
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.core.audio import SoundLoader
 
 
 
@@ -36,6 +37,7 @@ from ffpyplayer.player import MediaPlayer
 import io
 import math
 import time
+import threading
 import PIL
 from PIL import Image
 import random
@@ -55,8 +57,6 @@ try:
         playlists = json.load(playlists_j)
     with open('src/MusicPlayer/preferences.json', 'r') as preferences_json:
         preferences = json.load(preferences_json)
-        directory = preferences["directory"]
-        loop = preferences["loop"]
 except:
     print("Error opening JSON files!")
 
@@ -67,7 +67,10 @@ queue = []
 queue_index = 0
 current_song_info = {}
 current_song = None
+
+# Initialize Important Components
 sm = ScreenManager()
+PlaybackController = pm.PlaybackManager()
 
 
 
@@ -89,13 +92,17 @@ Should have next and previous song loaded
 
 Instead of MusicMenu updating on its own (including when on other screens),
 how about PlaybackManager doing the updates, and also only if its on the MusicMenu screen?
-
-Integrate song_count and total_length into playlist json and database update on start
 """
 
 
-# player control flow functions
 
+
+
+
+
+
+
+# player control flow functions
 
 def song_finished(ref):
     global current_song
@@ -210,14 +217,12 @@ class MusicMenu(Screen):
 
     def __init__(self, **kwargs):
         super(MusicMenu, self).__init__(**kwargs)
-        #Clock.schedule_interval(self.update, 0.1)
-        #play_song(queue[0], self, True)
+        PlaybackController.funcs_to_call.append(self)
 
     def update(self, *args):
-        global current_song_info
-        # check if the song is finished
-        if (current_song_info['duration'] - current_song.get_pts()) < 0.1:
-            song_finished(self)
+        # DISABLE BUTTONS IF VARIOUS CONDITIONS
+        # 1. PQueue is empty, disable BackBtn
+        # 2.
 
         # get song position and update slider
         # if song is paused, keep position the same`
@@ -329,7 +334,6 @@ class MainMenu(Screen):
                 'total_length': playlists_sorted[i]["total_length"]}
                for i in range(len(playlists_sorted))])
 
-
     def update_tab(self):
         if self.ids.main_song_list.viewclass == Song_Row:
             self.display_songs()
@@ -347,9 +351,6 @@ class MainMenu(Screen):
         self.ids.main_song_list.viewclass = 'Playlist_Row'
         self.update_tab()
 
-
-
-
 class MusicPlayerApp(App):
     def build(self):
         global queue
@@ -357,11 +358,9 @@ class MusicPlayerApp(App):
         global songs
         global playlists
         global sm
+        global PlaybackController
 
         Window.set_icon('resources/images/icon.png')
-
-        queue = ["1","2","3","4","5"]
-        queue_index = 0
 
         fm.update_song_database('C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1')
         try:
@@ -372,9 +371,22 @@ class MusicPlayerApp(App):
         except:
             print("Uh oh! Something went wrong in build()!")
 
+        # Initialize PlaybackController
+        PlaybackController.previouslyPlayed = preferences['previous_queue']
+        PlaybackController.currentSongId = preferences['current_song_id']
+        PlaybackController.priorityQueue = preferences['priority_queue']
+        PlaybackController.queue = preferences['queue']
+        PlaybackController.fullScope = preferences['queue']
+        PlaybackController.shuffle = preferences['shuffle']
+        PlaybackController.loop = preferences['loop']
+
+        # After initializing the queues, start playback controller
+        PlaybackController.Start()
+
+        # MAKE CURRENT SCREEN LOAD FIRST
         sm.add_widget(MusicMenu(name="MusicMenu"))
         sm.add_widget(MainMenu(name="MainMenu"))
-        sm.current = 'MainMenu'
+        sm.current = 'MusicMenu'
 
         return sm
 
