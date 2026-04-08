@@ -125,7 +125,6 @@ class PlaybackManager:
                 self.scope.remove(id)
 
     def update(self):
-        print("Playback Update")
         if self.curSong is not None:
             # Check if song is finished
             if self.curSong is not None and not self.curSong.get_pause(): # But only if the current song exists
@@ -159,17 +158,23 @@ class PlaybackManager:
         return info
 
     # Only called if current song is unpaused, unless called by skip()
-    def song_finished(self):
+    def song_finished(self, skipped=False):
         # no songs, do nothing
         if self.curSong == None:
             return
-        if self.loop: # restart current song
-            self.curSong.seek(0)
+        if self.loop and not skipped: # restart current song, unless skip button was used
+            self.curSong.set_pause(True)
+            self.seek(0.0)
+            self.curSong.set_pause(False)
             return
         # at least 1 song, loop is off
 
+        # pause current song and seek to 0
+        self.curSong.set_pause(True)
+        self.seek(0.0)
+
         # close prevSong MediaPlayer object with a separate thread
-        threading.Thread(target=self.close_song, args=(self.prevSong), daemon=True).start()
+        threading.Thread(target=self.close_song, args=(self.prevSong,), daemon=True).start()
 
         # move around references, prev <- cur, cur <- next
         self.prevSong = self.curSong
@@ -201,6 +206,18 @@ class PlaybackManager:
         if not self.paused:
             self.curSong.set_pause(False)
 
+        # update info for other classes
+        for func in self.funcs_to_call:
+            func.update_info()
+
+    def debug_print(self, function_name):
+        print("\n")
+        print("CALLED FROM: " + function_name)
+        print("PREVIOUSLY PLAYED: " + str(self.previouslyPlayed))
+        print("CURRENT SONG: " + str(self.curSong))
+        print("PRIORITY QUEUE: " + str(self.priorityQueue))
+        print("QUEUE: " + str(self.queue))
+
     def set_next_song(self):
         # update id
         self.nextSongId = self.get_next_id()
@@ -219,7 +236,7 @@ class PlaybackManager:
         elif self.priorityQueue == [] and self.queue != []:
             nextSongId = self.queue[0]
         elif self.priorityQueue == [] and self.queue == []:
-            self.queue.append(self.scope)
+            self.queue.extend(self.scope)
             if self.shuffle:
                 self.shuffle_queue()
             nextSongId = self.queue[0]
@@ -259,7 +276,9 @@ class PlaybackManager:
         return self.paused
 
     def set_pause(self, paused):
-        self.paused = paused
+        if self.curSong is not None:
+            self.paused = paused
+            self.curSong.set_pause(paused)
 
     """
     *** Functions called by Buttons ***
@@ -294,14 +313,18 @@ class PlaybackManager:
 
     def skip(self):
         # just call song finished
-        self.song_finished()
+        self.song_finished(True)
 
     def back(self):
         if self.curSong is None:
             return
 
+        # pause current song and seek to 0
+        self.curSong.set_pause(True)
+        self.seek(0.0)
+
         # close prevSong MediaPlayer object with a separate thread
-        threading.Thread(target=self.close_song, args=(self.nextSong), daemon=True).start()
+        threading.Thread(target=self.close_song, args=(self.nextSong,), daemon=True).start()
 
         # move around references, prev -> cur, cur -> next
         self.nextSong = self.curSong
@@ -323,6 +346,10 @@ class PlaybackManager:
         # Play prev song if paused is false
         if not self.paused:
             self.curSong.set_pause(False)
+
+        # update info for other classes
+        for func in self.funcs_to_call:
+            func.update_info()
 
     def seek(self, new_pos):
         self.curSong.seek(new_pos, relative=False)

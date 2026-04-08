@@ -157,7 +157,7 @@ class MusicMenu(Screen):
     def update(self, *args):
         # DISABLE BUTTONS ON VARIOUS CONDITIONS
         # Update Labels as well
-        print("MusicMenu Update")
+
         # back button
         if PlaybackController.prevSong is None or PlaybackController.curSong is None:
             if self.ids.reverse_btn.disabled != True:
@@ -173,7 +173,7 @@ class MusicMenu(Screen):
         else:
             if self.ids.play_btn.disabled != False:
                 self.ids.play_btn.disabled = False
-        if PlaybackController.get_pause() and self.ids.play_btn.text != 'Play':
+        if PlaybackController.get_pause() and self.ids.play_btn.text != 'Play' and not self.pause_by_slider:
             self.ids.play_btn.text = 'Play'
         elif not PlaybackController.get_pause() and self.ids.play_btn.text != 'Pause':
             self.ids.play_btn.text = 'Pause'
@@ -203,7 +203,6 @@ class MusicMenu(Screen):
             if not self.pause_by_slider:
                 PlaybackController.set_pause(True)
                 self.pause_by_slider = True
-        #print("slider_touched")
 
     def update_info(self):
         # update info
@@ -213,9 +212,14 @@ class MusicMenu(Screen):
         self.ids.song_title.text = current_song_info['title']
         self.ids.artist_name.text = current_song_info['artist']
         self.ids.album_cover.texture = fm.get_album_cover(current_song_info["filepath"]).texture
+        #threading.Thread(target=self.update_album_cover, daemon=True).start()
         self.ids.duration_slider.max = current_song_info['duration']
         self.pause_by_slider = False
 
+    def update_album_cover(self):
+        time.sleep(3)
+        self.ids.album_cover.texture = fm.get_album_cover(PlaybackController.get_info()["filepath"]).texture
+        print("getting album cover again")
 
     def slider_up(self):
         new_pos = self.ids.duration_slider.value
@@ -224,23 +228,26 @@ class MusicMenu(Screen):
         if self.pause_by_slider:
             PlaybackController.set_pause(False)
             self.pause_by_slider = False
-        #print("slider_up")
 
     def play_btn_press(self):
         PlaybackController.toggle_pause()
-        print(PlaybackController.curSong)
+
 
     def toggle_loop(self):
         PlaybackController.toggle_loop()
+        PlaybackController.debug_print("toggle_loop")
 
     def forward_btn_press(self):
         PlaybackController.skip()
+        PlaybackController.debug_print("forward_btn_press")
 
-    def song_back(self):
+    def back_btn_press(self):
         PlaybackController.back()
+        PlaybackController.debug_print("back_btn_press")
 
     def shuffle_queue(self):
         PlaybackController.toggle_shuffle()
+        PlaybackController.debug_print("shuffle_queue")
 
 class MainMenu(Screen):
     def __init__(self, **kwargs):
@@ -255,7 +262,6 @@ class MainMenu(Screen):
 
         # now we have a sorted list of each song as a dictionary, put it in the recycle view
         self.ids.main_song_list.data = [{'info': songs["songs"][key], 'id': key} for key in key_list]
-        print([{'info': songs["songs"][key], 'id': key} for key in key_list])
 
     def display_playlists(self):
         global playlists
@@ -269,11 +275,6 @@ class MainMenu(Screen):
                                          'song_count': playlists_sorted[i]["song_count"],
                                          'total_length': playlists_sorted[i]["total_length"]}
                                         for i in range(len(playlists_sorted))]
-        print([{'name': playlists_sorted[i]["name"],
-                'song_list': playlists_sorted[i]["songs"],
-                'song_count': playlists_sorted[i]["song_count"],
-                'total_length': playlists_sorted[i]["total_length"]}
-               for i in range(len(playlists_sorted))])
 
     def update_tab(self):
         if self.ids.main_song_list.viewclass == Song_Row:
