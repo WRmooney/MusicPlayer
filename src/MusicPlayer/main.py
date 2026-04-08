@@ -60,19 +60,9 @@ try:
 except:
     print("Error opening JSON files!")
 
-
-
-# add these into preferences.JSON later
-queue = []
-queue_index = 0
-current_song_info = {}
-current_song = None
-
 # Initialize Important Components
 sm = ScreenManager()
-PlaybackController = pm.PlaybackManager()
-
-
+PlaybackController = None
 
 """ 
 *** NOTES ***
@@ -210,9 +200,6 @@ class Playlist_Row(RecycleDataViewBehavior, BoxLayout):
         self.ids.pr_count.text = self.song_count
         self.ids.pr_duration.text = time.strftime('%M:%S', time.gmtime(self.total_length))
 
-class PlaybackManager:
-    pass
-
 class MusicMenu(Screen):
 
     def __init__(self, **kwargs):
@@ -220,86 +207,82 @@ class MusicMenu(Screen):
         PlaybackController.funcs_to_call.append(self)
 
     def update(self, *args):
-        # DISABLE BUTTONS IF VARIOUS CONDITIONS
-        # 1. PQueue is empty, disable BackBtn
-        # 2.
+        # DISABLE BUTTONS ON VARIOUS CONDITIONS
+        # Update Labels as well
+
+        # back button
+        if PlaybackController.prevSong is None or PlaybackController.curSong is None:
+            if self.ids.reverse_btn.disabled != True:
+                self.ids.reverse_btn.disabled = True
+        else:
+            if self.ids.reverse_btn.disabled != False:
+                self.ids.reverse_btn.disabled = False
+
+        # pause button
+        if PlaybackController.curSong is None:
+            if self.ids.play_btn.disabled != True:
+                self.ids.play_btn.disabled = True
+        else:
+            if self.ids.play_btn.disabled != False:
+                self.ids.play_btn.disabled = False
+        if PlaybackController.get_pause() and self.ids.pause_btn.text != 'Play':
+            self.ids.pause_btn.text = 'Play'
+        elif PlaybackController.get_pause() and self.ids.pause_btn.text != 'Pause':
+            self.ids.pause_btn.text = 'Pause'
+
+        # Shuffle Button
+        if PlaybackController.shuffle and self.ids.shuffle_btn.text != 'Shuffle: On':
+            self.ids.shuffle_btn.text = 'Shuffle: On'
+        elif not PlaybackController.shuffle and self.ids.shuffle_btn.text != 'Shuffle: Off':
+            self.ids.shuffle_btn.text = 'Shuffle: Off'
+
+        # Loop Button
+        if PlaybackController.loop and self.ids.loop_btn.text != 'Loop: On':
+            self.ids.loop_btn.text = 'Loop: On'
+        elif not PlaybackController.loop and self.ids.loop_btn.text != 'Loop: Off':
+            self.ids.loop_btn.text = 'Loop: Off'
+
+
+
 
         # get song position and update slider
         # if song is paused, keep position the same`
         cur_pos = self.ids.duration_slider.value
-        if not current_song.get_pause(): # if song is paused, don't update the slider based on song position
-            cur_pos = current_song.get_pts()
+        if not PlaybackController.get_pause(): # if song is paused, don't update the slider based on song position
+            cur_pos = PlaybackController.get_time()
         self.ids.duration_slider.value = cur_pos
         self.ids.time_stamp_label.text = time.strftime('%M:%S', time.gmtime(cur_pos))
 
     def slider_touched(self):
-        if not current_song.get_pause():
+        if not PlaybackController.get_pause():
             if not self.pause_by_slider:
-                current_song.set_pause(True)
+                PlaybackController.set_pause(True)
                 self.pause_by_slider = True
         #print("slider_touched")
 
     def slider_up(self):
         new_pos = self.ids.duration_slider.value
-        if math.fabs(new_pos - current_song.get_pts()) > 0.1:
-            current_song.seek(new_pos, relative=False)
+        if math.fabs(new_pos - PlaybackController.get_time()) > 0.1:
+            PlaybackController.seek(new_pos, relative=False)
         if self.pause_by_slider:
-            current_song.set_pause(False)
+            PlaybackController.set_pause(False)
             self.pause_by_slider = False
         #print("slider_up")
 
     def play_btn_press(self):
-        if current_song.get_pause():
-            current_song.set_pause(False)
-            self.ids.play_btn.text = 'Pause'
-            self.pause_by_button = False
-        else:
-            current_song.set_pause(True)
-            self.ids.play_btn.text = 'Play'
-            self.pause_by_button = True
+        PlaybackController.toggle_pause()
 
     def toggle_loop(self):
-        global loop
-        if loop:
-            loop = False
-            self.ids.loop_btn.text = 'Loop: Off'
-        else:
-            loop = True
-            self.ids.loop_btn.text = 'Loop: On'
+        PlaybackController.toggle_loop()
 
     def forward_btn_press(self):
-        global queue
-        global queue_index
-        while True:
-            if queue_index == len(queue) - 1:
-                queue_index = 0
-            else:
-                queue_index += 1
-            if queue[queue_index] in songs["songs"]:
-                break
-
-
-
-        play_song(queue[queue_index], self, current_song.get_pause())
+        PlaybackController.skip()
 
     def song_back(self):
-        global current_song
-        global queue
-        global queue_index
-        global loop
-
-        while True:
-            if queue_index == 0:
-                queue_index = len(queue)-1
-            else:
-                queue_index -= 1
-            if queue[queue_index] in songs["songs"]:
-                break
-        play_song(queue[queue_index], self, current_song.get_pause())
+        PlaybackController.back()
 
     def shuffle_queue(self):
-        global queue
-        random.shuffle(queue)
+        PlaybackController.toggle_shuffle()
 
 class MainMenu(Screen):
     def __init__(self, **kwargs):
@@ -353,8 +336,6 @@ class MainMenu(Screen):
 
 class MusicPlayerApp(App):
     def build(self):
-        global queue
-        global queue_index
         global songs
         global playlists
         global sm
@@ -372,16 +353,18 @@ class MusicPlayerApp(App):
             print("Uh oh! Something went wrong in build()!")
 
         # Initialize PlaybackController
-        PlaybackController.previouslyPlayed = preferences['previous_queue']
-        PlaybackController.currentSongId = preferences['current_song_id']
-        PlaybackController.priorityQueue = preferences['priority_queue']
-        PlaybackController.queue = preferences['queue']
-        PlaybackController.fullScope = preferences['queue']
-        PlaybackController.shuffle = preferences['shuffle']
-        PlaybackController.loop = preferences['loop']
+        PlaybackController = pm.PlaybackManager(
+            preferences['previous_queue'],
+            preferences['current_song_id'],
+            preferences['priority_queue'],
+            preferences['queue'],
+            preferences['scope'],
+            preferences['shuffle'],
+            preferences['loop']
+        )
 
         # After initializing the queues, start playback controller
-        PlaybackController.Start()
+        PlaybackController.start(songs)
 
         # MAKE CURRENT SCREEN LOAD FIRST
         sm.add_widget(MusicMenu(name="MusicMenu"))

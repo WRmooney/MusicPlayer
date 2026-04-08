@@ -1,17 +1,19 @@
 from ffpyplayer.player import MediaPlayer
 import threading
-import time
 import file_manager as fm
+import random
 
 
 class PlaybackManager:
-    def __init__(self):
+    def __init__(self, PrevPlayed, CurId, PQ, Q, Scope, shuffle, loop):
         # queue variables
-        self.previouslyPlayed: []
-        self.currentSongId: ""
-        self.priorityQueue: []
-        self.queue = []
-        self.fullScope = [] # whole list of songs to play, used when queue runs out
+        self.previouslyPlayed: PrevPlayed
+        self.previousSongId: ""
+        self.currentSongId: CurId
+        self.nextSongId: ""
+        self.priorityQueue: PQ
+        self.queue = Q
+        self.scope = Scope # Whole list of songs to play, used when queue runs out
 
         # Players (max 3)
         self.prevSong: None
@@ -20,8 +22,8 @@ class PlaybackManager:
 
         # Important Variables
         self.paused = True
-        self.shuffle = False
-        self.loop = False
+        self.shuffle = shuffle
+        self.loop = loop
 
         # Reference to Outside Functions
         self.funcs_to_call = []
@@ -29,56 +31,101 @@ class PlaybackManager:
         # create self.timer, initialized in Start()
         self.timer = None
 
-    def Start(self):
-        # At this point, queues have been initialized (may be empty, still)
-        try:
-            self.curSong = MediaPlayer(self.get_info()["filepath"],ff_opts={"paused": self.paused},
-                ss=0.0)
-        except: # No Current Song, so no filepath
-            self.curSong = None
-        try:
-            self.prevSong = MediaPlayer(self.get_info(self.previouslyPlayed[-1])["filepath"],ff_opts={"paused": True},
-                ss=0.0)
-        except: # No previous songs, index error
-            self.prevSong = None
-        try:
-            if self.priorityQueue != []:
-                self.nextSong = MediaPlayer(self.get_info(self.priorityQueue[0])["filepath"], ff_opts={"paused": True},
-                ss=0.0)
+    def start(self, songs):
+        # Check all songs and ensure they exist
+        self.checkSongIds(songs)
+
+        # Check current Song id
+        if self.currentSongId == "":
+            # set everything to None, don't do anything, maybe change later?
+            self.nextSongId = ""
+            self.prevSongId = ""
+            self.previouslyPlayed = []
+            self.priorityQueue = []
+            self.queue = []
+            # Call self.update() every 0.1 secs
+            self.timer = threading.Timer(0.1, self.update)
+            return
+        else: # initialize current song
+            self.curSong = MediaPlayer(self.get_info()["filepath"],
+                                       ff_opts={"paused": self.paused},ss=0.0)
+
+        # check queue and priority queue, add scope if empty
+        if self.priorityQueue != []:
+            # priority queue has something, set nextSong
+            self.nextSongId = self.priorityQueue[0]
+            self.nextSong = MediaPlayer(self.get_info(self.nextSongId)["filepath"],
+                                        ff_opts={"paused": True}, ss=0.0)
+        elif self.queue != [] and self.priorityQueue == []:
+            # priority queue is empty, queue is not empty, set nextSong
+            self.nextSongId = self.queue[0]
+            self.nextSong = MediaPlayer(self.get_info(self.nextSongId)["filepath"],
+                                        ff_opts={"paused":True}, ss=0.0)
+        elif self.queue == [] and self.priorityQueue == []:
+            if self.scope != []:
+                self.queue.append(self.scope)
             else:
-                self.nextSong = MediaPlayer(self.get_info(self.queue[0])["filepath"], ff_opts={"paused": True},
-                ss=0.0)
-        except: # No songs queued
-            self.nextSong = None
+                self.queue.append(self.currentSongId)
+                self.scope = [self.currentSongId]
+            self.nextSongId = self.queue[0]
+            self.nextSong = MediaPlayer(self.get_info(self.nextSongId)["filepath"],
+                                        ff_opts={"paused": True}, ss=0.0)
 
-        # Now, all three players are either None or have been initialized
-        # prev, cur, next all exist -> at least 3 songs
-        # prev, cur exist -> at least 1 song in previous, both pqueue and queue empty
-        # cur, next exist -> at least 1 song queued
-        # cur exist -> only 1 song
-        # none exist -> 0 songs -> do nothing
-
-
+        # check previous stack
+        if self.previouslyPlayed == []:
+            self.prevSongId = ""
+            self.prevSong = None
+        else:
+            self.prevSongId = self.previouslyPlayed[-1]
+            self.prevSong = MediaPlayer(self.get_info(self.prevSongId)["filepath"],
+                                        ff_opts={"paused": True}, ss=0.0)
 
         # Call self.update() every 0.1 secs
         self.timer = threading.Timer(0.1, self.update)
 
-    def update(self):
-        # Check if song is finished
-        if self.curSong is not None: # But only if the current song exists
-            if (self.get_info()["duration"] - self.get_time()) < 0.1:
-                self.song_finished()
 
-        # call updates on any outside functions that need it (MusicMenu)
-        for func in self.funcs_to_call:
-            func.update()
+    def checkSongIds(self, songs):
+        # check current song id
+        if self.currentSongId not in songs:
+            self.currentSongId = ""
+
+        # check previously played
+        for id in self.previouslyPlayed:
+            if id not in songs:
+                self.previouslyPlayed.remove(id)
+
+        # check priority queue
+        for id in self.priorityQueue:
+            if id not in songs:
+                self.priorityQueue.remove(id)
+
+        # check regular queue
+        for id in self.queue:
+            if id not in songs:
+                self.queue.remove(id)
+
+        # check scope
+        for id in self.scope:
+            if id not in songs:
+                self.scope.remove(id)
+
+    def update(self):
+        if self.curSong is not None:
+            # Check if song is finished
+            if self.curSong is not None and not self.curSong.get_pause(): # But only if the current song exists
+                if (self.get_info()["duration"] - self.get_time()) < 0.1:
+                    self.song_finished()
+
+            # call updates on any outside functions that need it (MusicMenu)
+            for func in self.funcs_to_call:
+                func.update()
 
     def get_time(self):
         try:
-            time = self.curSong.get_pts()
+            curtime = self.curSong.get_pts()
         except: # curSong is None
-            time=0
-        return time
+            curtime=0
+        return curtime
 
     def get_info(self, song_id=None):
         if song_id is None: # if song_id is not none, its prev or next song
@@ -95,41 +142,174 @@ class PlaybackManager:
             }
         return info
 
+    # Only called if current song is unpaused, unless called by skip()
     def song_finished(self):
+        # no songs, do nothing
+        if self.curSong == None:
+            return
         if self.loop: # restart current song
             self.curSong.seek(0)
-        else: # get next song
-            if self.nextSong is not None: # Next song exists
-                # Use a thread to close previous song and open next song
-                close_song_thread = threading.Thread(target=self.close_song, args=(self.prevSong), daemon=True)
-                close_song_thread.start()
-                # move prev <- cur and cur <- next
-                self.prevSong = self.curSong
-                self.curSong = self.nextSong
+            return
+        # at least 1 song, loop is off
 
-                # get current song id
-                self.previouslyPlayed.append(self.currentSongId)
-                if self.priorityQueue != []:
-                    self.currentSongId = self.priorityQueue.pop(0)
-                else: # priority queue is empty, pull from queue
-                    if self.queue != []:
-                        self.currentSongId = self.queue.pop(0)
-                    else: # regular queue is empty, pull from previous (should never happen)
-                        if self.previouslyPlayed != []:
-                            self.currentSongId = self.previouslyPlayed[0]
+        # close prevSong MediaPlayer object with a separate thread
+        threading.Thread(target=self.close_song, args=(self.prevSong), daemon=True).start()
 
-            else: # next song does not exist, replay current
-                self.curSong.seek(0)
+        # move around references, prev <- cur, cur <- next
+        self.prevSong = self.curSong
+        self.prevSongId = self.currentSongId
+        self.curSong = self.nextSong
+        self.currentSongId = self.nextSongId
 
+        # Add prev to previouslyPlayed and pop cur from wherever it came from
+        self.previouslyPlayed.append(self.prevSongId)
+        if self.priorityQueue != []:
+            self.priorityQueue.pop(0)
+        else:
+            self.queue.pop(0)
 
+        # Set Next Song
+        self.set_next_song()
+
+        # Play next song if paused is false
+        """
+        song_finished() is usually called when self.paused == False
+        EXCEPT for skip(), which could pass either true or false
+        
+        if skip() is called when self.paused == True
+        nothing happens, song stays paused
+        
+        when self.paused == False, the song is unpaused here, 
+        regardless of where song_finished was called from
+        """
+        if not self.paused:
+            self.curSong.set_pause(False)
+
+    def set_next_song(self):
+        # update id
+        self.nextSongId = self.get_next_id()
+        # use multithreading to load the song in the background
+        threading.Thread(target=self.load_song, args=("next", self.nextSongId), daemon=True).start()
+
+    def set_prev_song(self):
+        # Update id
+        self.prevSongId = self.get_prev_id()
+        # use multithreading to load the song in the background
+        threading.Thread(target=self.load_song, args=("prev", self.prevSongId), daemon=True).start()
+
+    def get_next_id(self):
+        if self.priorityQueue != []:
+            nextSongId = self.priorityQueue[0]
+        elif self.priorityQueue == [] and self.queue != []:
+            nextSongId = self.queue[0]
+        elif self.priorityQueue == [] and self.queue == []:
+            self.queue.append(self.scope)
+            if self.shuffle:
+                self.shuffle_queue()
+            nextSongId = self.queue[0]
+        return nextSongId
+
+    def get_prev_id(self):
+        if self.previouslyPlayed == []:
+            return ""
+        else:
+            return self.previouslyPlayed[-1]
+
+    def load_song(self, ref_key, song_id):
+
+        if ref_key == "next":
+            self.nextSong = MediaPlayer(self.get_info(song_id)["filepath"], ff_opts={"paused": True},
+                                   ss=0.0)
+        elif ref_key == "prev":
+            self.prevSong = MediaPlayer(self.get_info(song_id)["filepath"], ff_opts={"paused": True},
+                                        ss=0.0) if song_id != "" else None # return none if no previously played songs
 
     def close_song(self, ref):
         # ref is a reference to a MediaPlayer object (ex. self.prevSong)
         ref.close_player()
 
+    def shuffle_queue(self):
+        random.shuffle(self.queue)
+        self.update_next_song()
+
+    def update_next_song(self):
+        # nothing changed, do nothing
+        if self.get_next_id() == self.nextSongId:
+            return
+        else:
+            self.set_next_song()
+
+    def get_pause(self):
+        return self.paused
+
+    def set_pause(self, paused):
+        self.paused = paused
+
+    """
+    *** Functions called by Buttons ***
+    
+    they all will do nothing when curSong is None
+    """
+
+    def toggle_pause(self):
+        if self.curSong is not None:
+            if self.paused:
+                self.paused = False
+                self.curSong.set_pause(False)
+            else:
+                self.paused = True
+                self.curSong.set_pause(True)
+
+    def toggle_loop(self):
+        if self.loop:
+            self.loop = False
+        else:
+            self.loop = True
+
+    def toggle_shuffle(self):
+        # Only shuffle if there are songs to shuffle, don't shuffle priority queue
+        if self.curSong is not None and self.queue != []:
+            if self.shuffle:
+                self.shuffle = False
+                # !!! Need to add code to put original order (very tough)
+            else:
+                self.shuffle = True
+                self.shuffle_queue()
+
+    def skip(self):
+        # just call song finished
+        self.song_finished()
+
+    def back(self):
+        if self.curSong is None:
+            return
+
+        # close prevSong MediaPlayer object with a separate thread
+        threading.Thread(target=self.close_song, args=(self.nextSong), daemon=True).start()
+
+        # move around references, prev -> cur, cur -> next
+        self.nextSong = self.curSong
+        self.nextSongId = self.currentSongId
+        self.curSong = self.prevSong
+        self.currentSongId = self.prevSongId
 
 
+        # Add next to queue or pqueue and pop cur from previouslyPlayed
+        self.previouslyPlayed.pop(-1)
+        if self.priorityQueue != []:
+            self.priorityQueue.insert(0, self.nextSongId)
+        else:
+            self.queue.insert(0,self.nextSongId)
 
+        # Set Next Song
+        self.set_prev_song()
+
+        # Play prev song if paused is false
+        if not self.paused:
+            self.curSong.set_pause(False)
+
+    def seek(self, new_pos):
+        self.curSong.seek(new_pos, relative=False)
 
     """
     Need:
