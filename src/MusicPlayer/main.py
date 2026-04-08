@@ -88,61 +88,6 @@ how about PlaybackManager doing the updates, and also only if its on the MusicMe
 
 
 
-
-
-
-
-# player control flow functions
-
-def song_finished(ref):
-    global current_song
-    global queue
-    global queue_index
-    global loop
-    global songs
-
-
-    if not loop:
-        while True:
-            if queue_index == len(queue)-1:
-                queue_index = 0
-            else:
-                queue_index += 1
-            if queue[queue_index] in songs["songs"]:
-                break
-    try:
-        play_song(queue[queue_index], ref, current_song.get_pause())
-    except AttributeError:
-        play_song(queue[queue_index], ref, True)
-
-def play_song(song_id, ref, playing):
-    global current_song
-    global directory
-    global songs
-
-    # song_finished, forward_btn, back_btn already catch missing files, this is for the first song in queue
-    if queue[queue_index] not in songs["songs"]:
-        song_finished(ref)
-        return
-    MediaPlayer.close_player(current_song)
-
-    current_song = MediaPlayer(songs["songs"][song_id]["filepath"],
-                ff_opts={"paused": playing},
-                ss=0.0)
-    update_info(queue[queue_index], ref)
-
-def update_info(song_id, ref):
-    global current_song_info
-    current_song_info = fm.fetch_song_info(song_id)
-    ref.ids.duration_slider.value = 0
-    ref.ids.duration_label.text = time.strftime('%M:%S', time.gmtime(current_song_info['duration']))
-    ref.ids.song_title.text = current_song_info['title']
-    ref.ids.artist_name.text = current_song_info['artist']
-    ref.ids.album_cover.texture = fm.get_album_cover(current_song_info["filepath"]).texture
-    ref.ids.duration_slider.max = current_song_info['duration']
-    ref.pause_by_slider = False
-    ref.pause_by_button = False
-
 # custom slider, important for functionality
 class CustomSlider(Slider):
     def on_touch_down(self, touch):
@@ -150,7 +95,7 @@ class CustomSlider(Slider):
         if self.collide_point(*touch.pos):
             #print("Slider clicked/touched!")
             # Consume the event
-            App.get_running_app().root.slider_touched()
+            sm.get_screen('MusicMenu').slider_touched()
             return super(CustomSlider, self).on_touch_down(touch)
         # If not, ignore
         return False
@@ -204,12 +149,15 @@ class MusicMenu(Screen):
 
     def __init__(self, **kwargs):
         super(MusicMenu, self).__init__(**kwargs)
+        self.pause_by_slider = False
+
         PlaybackController.funcs_to_call.append(self)
+        self.update_info()
 
     def update(self, *args):
         # DISABLE BUTTONS ON VARIOUS CONDITIONS
         # Update Labels as well
-
+        print("MusicMenu Update")
         # back button
         if PlaybackController.prevSong is None or PlaybackController.curSong is None:
             if self.ids.reverse_btn.disabled != True:
@@ -225,10 +173,10 @@ class MusicMenu(Screen):
         else:
             if self.ids.play_btn.disabled != False:
                 self.ids.play_btn.disabled = False
-        if PlaybackController.get_pause() and self.ids.pause_btn.text != 'Play':
-            self.ids.pause_btn.text = 'Play'
-        elif PlaybackController.get_pause() and self.ids.pause_btn.text != 'Pause':
-            self.ids.pause_btn.text = 'Pause'
+        if PlaybackController.get_pause() and self.ids.play_btn.text != 'Play':
+            self.ids.play_btn.text = 'Play'
+        elif not PlaybackController.get_pause() and self.ids.play_btn.text != 'Pause':
+            self.ids.play_btn.text = 'Pause'
 
         # Shuffle Button
         if PlaybackController.shuffle and self.ids.shuffle_btn.text != 'Shuffle: On':
@@ -241,9 +189,6 @@ class MusicMenu(Screen):
             self.ids.loop_btn.text = 'Loop: On'
         elif not PlaybackController.loop and self.ids.loop_btn.text != 'Loop: Off':
             self.ids.loop_btn.text = 'Loop: Off'
-
-
-
 
         # get song position and update slider
         # if song is paused, keep position the same`
@@ -260,10 +205,22 @@ class MusicMenu(Screen):
                 self.pause_by_slider = True
         #print("slider_touched")
 
+    def update_info(self):
+        # update info
+        current_song_info = PlaybackController.get_info()
+        self.ids.duration_slider.value = 0
+        self.ids.duration_label.text = time.strftime('%M:%S', time.gmtime(current_song_info['duration']))
+        self.ids.song_title.text = current_song_info['title']
+        self.ids.artist_name.text = current_song_info['artist']
+        self.ids.album_cover.texture = fm.get_album_cover(current_song_info["filepath"]).texture
+        self.ids.duration_slider.max = current_song_info['duration']
+        self.pause_by_slider = False
+
+
     def slider_up(self):
         new_pos = self.ids.duration_slider.value
         if math.fabs(new_pos - PlaybackController.get_time()) > 0.1:
-            PlaybackController.seek(new_pos, relative=False)
+            PlaybackController.seek(new_pos)
         if self.pause_by_slider:
             PlaybackController.set_pause(False)
             self.pause_by_slider = False
@@ -271,6 +228,7 @@ class MusicMenu(Screen):
 
     def play_btn_press(self):
         PlaybackController.toggle_pause()
+        print(PlaybackController.curSong)
 
     def toggle_loop(self):
         PlaybackController.toggle_loop()
@@ -364,7 +322,7 @@ class MusicPlayerApp(App):
         )
 
         # After initializing the queues, start playback controller
-        PlaybackController.start(songs)
+        PlaybackController.start(songs["songs"])
 
         # MAKE CURRENT SCREEN LOAD FIRST
         sm.add_widget(MusicMenu(name="MusicMenu"))

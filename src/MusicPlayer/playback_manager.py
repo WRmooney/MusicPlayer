@@ -1,24 +1,25 @@
 from ffpyplayer.player import MediaPlayer
 import threading
 import file_manager as fm
+import time
 import random
 
 
 class PlaybackManager:
-    def __init__(self, PrevPlayed, CurId, PQ, Q, Scope, shuffle, loop):
+    def __init__(self, prev_played, cur_id, pq, queue, scope, shuffle, loop):
         # queue variables
-        self.previouslyPlayed: PrevPlayed
-        self.previousSongId: ""
-        self.currentSongId: CurId
-        self.nextSongId: ""
-        self.priorityQueue: PQ
-        self.queue = Q
-        self.scope = Scope # Whole list of songs to play, used when queue runs out
+        self.previouslyPlayed = prev_played
+        self.previousSongId = ""
+        self.currentSongId = cur_id
+        self.nextSongId = ""
+        self.priorityQueue = pq
+        self.queue = queue
+        self.scope = scope # Whole list of songs to play, used when queue runs out
 
         # Players (max 3)
-        self.prevSong: None
-        self.curSong: None
-        self.nextSong: None
+        self.prevSong = None
+        self.curSong = None
+        self.nextSong = None
 
         # Important Variables
         self.paused = True
@@ -29,11 +30,16 @@ class PlaybackManager:
         self.funcs_to_call = []
 
         # create self.timer, initialized in Start()
-        self.timer = None
+        self.thread = threading.Thread(target=self.timer_loop, daemon=True)
+        self.stop_event = threading.Event()
 
     def start(self, songs):
+
+
         # Check all songs and ensure they exist
         self.checkSongIds(songs)
+
+
 
         # Check current Song id
         if self.currentSongId == "":
@@ -44,7 +50,7 @@ class PlaybackManager:
             self.priorityQueue = []
             self.queue = []
             # Call self.update() every 0.1 secs
-            self.timer = threading.Timer(0.1, self.update)
+            self.start_timer()
             return
         else: # initialize current song
             self.curSong = MediaPlayer(self.get_info()["filepath"],
@@ -80,13 +86,22 @@ class PlaybackManager:
             self.prevSong = MediaPlayer(self.get_info(self.prevSongId)["filepath"],
                                         ff_opts={"paused": True}, ss=0.0)
 
-        # Call self.update() every 0.1 secs
-        self.timer = threading.Timer(0.1, self.update)
 
+
+        # Call self.update() every 0.1 secs
+        self.start_timer()
+
+    def start_timer(self):
+        self.thread.start()
+
+    def timer_loop(self):
+        while not self.stop_event.wait(0.1):
+            self.update()
 
     def checkSongIds(self, songs):
         # check current song id
         if self.currentSongId not in songs:
+            print("CURRENT SONG ID NOT IN SONGS")
             self.currentSongId = ""
 
         # check previously played
@@ -110,6 +125,7 @@ class PlaybackManager:
                 self.scope.remove(id)
 
     def update(self):
+        print("Playback Update")
         if self.curSong is not None:
             # Check if song is finished
             if self.curSong is not None and not self.curSong.get_pause(): # But only if the current song exists
