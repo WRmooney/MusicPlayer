@@ -101,7 +101,6 @@ class PlaybackManager:
     def checkSongIds(self, songs):
         # check current song id
         if self.currentSongId not in songs:
-            print("CURRENT SONG ID NOT IN SONGS")
             self.currentSongId = ""
 
         # check previously played
@@ -174,7 +173,8 @@ class PlaybackManager:
         self.seek(0.0)
 
         # close prevSong MediaPlayer object with a separate thread
-        threading.Thread(target=self.close_song, args=(self.prevSong,), daemon=True).start()
+        if self.prevSong is not None:
+            threading.Thread(target=self.close_song, args=(self.prevSong,), daemon=True).start()
 
         # move around references, prev <- cur, cur <- next
         self.prevSong = self.curSong

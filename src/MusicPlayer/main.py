@@ -16,7 +16,7 @@ from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.properties import NumericProperty, ReferenceListProperty, ObjectProperty, StringProperty, DictProperty, ListProperty, NumericProperty
 from kivy.vector import Vector
-from kivy.clock import Clock
+from kivy.clock import Clock, mainthread
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.stacklayout import StackLayout
 from kivy.uix.boxlayout import BoxLayout
@@ -204,6 +204,7 @@ class MusicMenu(Screen):
                 PlaybackController.set_pause(True)
                 self.pause_by_slider = True
 
+    @mainthread
     def update_info(self):
         # update info
         current_song_info = PlaybackController.get_info()
@@ -212,14 +213,10 @@ class MusicMenu(Screen):
         self.ids.song_title.text = current_song_info['title']
         self.ids.artist_name.text = current_song_info['artist']
         self.ids.album_cover.texture = fm.get_album_cover(current_song_info["filepath"]).texture
-        #threading.Thread(target=self.update_album_cover, daemon=True).start()
         self.ids.duration_slider.max = current_song_info['duration']
         self.pause_by_slider = False
 
-    def update_album_cover(self):
-        time.sleep(3)
-        self.ids.album_cover.texture = fm.get_album_cover(PlaybackController.get_info()["filepath"]).texture
-        print("getting album cover again")
+
 
     def slider_up(self):
         new_pos = self.ids.duration_slider.value
@@ -249,10 +246,15 @@ class MusicMenu(Screen):
         PlaybackController.toggle_shuffle()
         PlaybackController.debug_print("shuffle_queue")
 
+    def back_screen_btn(self):
+        sm.current = 'MainMenu'
+
 class MainMenu(Screen):
     def __init__(self, **kwargs):
         super(MainMenu, self).__init__(**kwargs)
+        PlaybackController.funcs_to_call.append(self)
         self.update_tab()
+        self.update_info()
 
     def display_songs(self):
         global songs
@@ -292,6 +294,49 @@ class MainMenu(Screen):
     def playlists_tab_btn(self):
         self.ids.main_song_list.viewclass = 'Playlist_Row'
         self.update_tab()
+
+    def open_music_menu(self):
+        sm.current = 'MusicMenu'
+
+    @mainthread
+    def update_info(self):
+        self.ids.cur_title_label.text = PlaybackController.get_info()["title"]
+        self.ids.cur_artist_label.text = PlaybackController.get_info()["artist"]
+
+    def update(self):
+        if PlaybackController.curSong is not None:
+            self.ids.cur_duration_label.text = (str(time.strftime('%M:%S', time.gmtime(PlaybackController.get_time()))) + " / "
+                                                + str(time.strftime('%M:%S', time.gmtime(PlaybackController.get_info()["duration"]))))
+        # back button
+        if PlaybackController.prevSong is None or PlaybackController.curSong is None:
+            if self.ids.main_back_btn.disabled != True:
+                self.ids.main_back_btn.disabled = True
+        else:
+            if self.ids.main_back_btn.disabled != False:
+                self.ids.main_back_btn.disabled = False
+
+        # pause button
+        if PlaybackController.curSong is None:
+            if self.ids.main_play_btn.disabled != True:
+                self.ids.main_play_btn.disabled = True
+        else:
+            if self.ids.main_play_btn.disabled != False:
+                self.ids.main_play_btn.disabled = False
+        if PlaybackController.get_pause() and self.ids.main_play_btn.text != 'Play':
+            self.ids.main_play_btn.text = 'Play'
+        elif not PlaybackController.get_pause() and self.ids.main_play_btn.text != 'Pause':
+            self.ids.main_play_btn.text = 'Pause'
+
+    def back_btn_press(self):
+        PlaybackController.back()
+        PlaybackController.debug_print("MainMenu back_btn_press")
+
+    def play_btn_press(self):
+        PlaybackController.toggle_pause()
+
+    def skip_btn_press(self):
+        PlaybackController.skip()
+        PlaybackController.debug_print("MainMenu skip_btn_press")
 
 class MusicPlayerApp(App):
     def build(self):
