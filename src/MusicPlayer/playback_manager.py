@@ -280,12 +280,6 @@ class PlaybackManager:
             self.paused = paused
             self.curSong.set_pause(paused)
 
-    """
-    *** Functions called by Buttons ***
-    
-    they all will do nothing when curSong is None
-    """
-
     def toggle_pause(self):
         if self.curSong is not None:
             if self.paused:
@@ -353,46 +347,4 @@ class PlaybackManager:
 
     def seek(self, new_pos):
         self.curSong.seek(new_pos, relative=False)
-
-    """
-    Need:
-    PlaySong
-    LoadSong
-    PauseSong
-    ForwardSong
-    BackSong
-    SongFinished
-    GetInfo (just call fm.fetch_song_info)
-    ToggleLoop
-    ToggleShuffle
-    SetTime
-    Each function should take into consideration a non-existent song
-    
-    Groupings:
-    **AUTOMATIC**
-    SongFinished
-    LoadSong
-    PlaySong
-    
-    **CALLED OUTSIDE**
-    PauseSong
-    ForwardSong
-    BackSong
-    GetInfo
-    ToggleLoop
-    ToggleShuffle
-    SetTime
-    """
-
-    """
-    Initialized in main
-    Starts blank
-    Main uses preferences.JSON to continue from previous session (need on exit later)
-    Use preferences.JSON to overwrite all queues, shuffle, loop, prev/cur/next song
-    
-    Have a "start" function called in main?
-    app init sets queue and stuff, then calls "start"?
-    start will load cur, prev, next?
-    """
-
 

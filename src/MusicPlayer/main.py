@@ -64,30 +64,6 @@ except:
 sm = ScreenManager()
 PlaybackController = None
 
-""" 
-*** NOTES ***
-
-Need to make that helper class to manage the playback on its own, buttons simply call the functions
-of that class.
-
-Playlist view!!!
-
-Catch if there are NO SONGS!!!
-
-Put pause/play, forward and backword functions into a Song Control Manager class!!!
-Also put the below functions in there! 
-The flow of song playback should continue regardless of what screen is being viewed!
-
-Should have next and previous song loaded
-
-Instead of MusicMenu updating on its own (including when on other screens),
-how about PlaybackManager doing the updates, and also only if its on the MusicMenu screen?
-"""
-
-
-
-
-
 # custom slider, important for functionality
 class CustomSlider(Slider):
     def on_touch_down(self, touch):
@@ -216,8 +192,6 @@ class MusicMenu(Screen):
         self.ids.duration_slider.max = current_song_info['duration']
         self.pause_by_slider = False
 
-
-
     def slider_up(self):
         new_pos = self.ids.duration_slider.value
         if math.fabs(new_pos - PlaybackController.get_time()) > 0.1:
@@ -228,7 +202,6 @@ class MusicMenu(Screen):
 
     def play_btn_press(self):
         PlaybackController.toggle_pause()
-
 
     def toggle_loop(self):
         PlaybackController.toggle_loop()
