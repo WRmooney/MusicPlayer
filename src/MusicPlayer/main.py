@@ -96,6 +96,10 @@ class Song_Row(RecycleDataViewBehavior, BoxLayout):
         self.ids.sr_artist.text = value.get('artist', 'Empty')
         self.ids.sr_duration.text = time.strftime('%M:%S', time.gmtime(value.get('duration', 0)))
 
+    def play_btn(self):
+        # set scope, set current song, set queue, empty pqueue, empty prevplayed
+        pass
+
 # class to display song and info in songs/playlists view
 class Playlist_Row(RecycleDataViewBehavior, BoxLayout):
     name = StringProperty('')
@@ -349,6 +353,14 @@ class MusicPlayerApp(App):
         sm.current = 'MusicMenu'
 
         return sm
+
+    def on_stop(self):
+        global preferences
+        # Set preferences using current preferences
+        PlaybackController.set_preferences(preferences)
+
+        with open('src/MusicPlayer/preferences.json', 'w') as pref_j:
+            json.dump(preferences, pref_j, indent=4)
 
 if __name__ == '__main__':
     MusicPlayerApp().run()

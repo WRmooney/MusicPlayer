@@ -348,3 +348,11 @@ class PlaybackManager:
     def seek(self, new_pos):
         self.curSong.seek(new_pos, relative=False)
 
+    def set_preferences(self, pref_ref):
+        pref_ref["loop"] = self.loop
+        pref_ref["shuffle"] = self.shuffle
+        pref_ref["previous_queue"] = self.previouslyPlayed
+        pref_ref["current_song_id"] = self.currentSongId
+        pref_ref["priority_queue"] = self.priorityQueue
+        pref_ref["queue"] = self.queue
+        pref_ref["scope"] = self.scope
