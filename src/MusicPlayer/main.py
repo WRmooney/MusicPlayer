@@ -1,7 +1,5 @@
 # kivy version requirement
 import kivy
-from kivy.uix.recycleview.views import RecycleDataViewBehavior
-
 kivy.require('2.3.1') # replace with your current kivy version !
 
 #region
@@ -26,6 +24,7 @@ from kivy.core.image import Image as CoreImage
 from kivy.uix.slider import Slider
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.core.audio import SoundLoader
+from kivy.uix.recycleview.views import RecycleDataViewBehavior
 
 
 
@@ -67,7 +66,6 @@ PlaybackController = None
 """
 **TODO**
 Add to queue buttons
-Play button functionality on mainmenu
 add playlist view
 add queue view in musicmenu and mainmenu
 add current scope name for queue view (ex. Playing from: My Playlist 1)
@@ -117,7 +115,6 @@ class Playlist_Row(RecycleDataViewBehavior, BoxLayout):
     song_count = NumericProperty()
     total_length = NumericProperty()
 
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -139,8 +136,6 @@ class Playlist_Row(RecycleDataViewBehavior, BoxLayout):
         # call play from songs using current playlist list
         PlaybackController.play_from_playlist(self.song_list)
         print("Playing Playlist: " + str(self.name))
-        for song in self.song_list:
-            print(PlaybackController.get_info(song)["title"])
 
 class MusicMenu(Screen):
 
@@ -242,6 +237,64 @@ class MusicMenu(Screen):
 
     def back_screen_btn(self):
         sm.current = 'MainMenu'
+
+class PlaylistView(Screen):
+    def __init__(self, **kwargs):
+        super(PlaylistView, self).__init__(**kwargs)
+        PlaybackController.funcs_to_call.append(self)
+        self.update_info()
+        self.cur_playlist = None
+
+    def display_songs(self):
+        if self.cur_playlist is None:
+            return
+        song_list = self.cur_playlist.song_list
+
+        # put songs in recycle view
+        self.ids.song_list.data = [{'info': songs["songs"][songid], 'id': songid} for songid in song_list]
+
+    def open_music_menu(self):
+        sm.current = 'MusicMenu'
+
+    @mainthread
+    def update_info(self):
+        self.ids.cur_title_label.text = PlaybackController.get_info()["title"]
+        self.ids.cur_artist_label.text = PlaybackController.get_info()["artist"]
+
+    def update(self):
+        if PlaybackController.curSong is not None:
+            self.ids.cur_duration_label.text = (str(time.strftime('%M:%S', time.gmtime(PlaybackController.get_time()))) + " / "
+                                                + str(time.strftime('%M:%S', time.gmtime(PlaybackController.get_info()["duration"]))))
+        # back button
+        if PlaybackController.prevSong is None or PlaybackController.curSong is None:
+            if self.ids.main_back_btn.disabled != True:
+                self.ids.main_back_btn.disabled = True
+        else:
+            if self.ids.main_back_btn.disabled != False:
+                self.ids.main_back_btn.disabled = False
+
+        # pause button
+        if PlaybackController.curSong is None:
+            if self.ids.main_play_btn.disabled != True:
+                self.ids.main_play_btn.disabled = True
+        else:
+            if self.ids.main_play_btn.disabled != False:
+                self.ids.main_play_btn.disabled = False
+        if PlaybackController.get_pause() and self.ids.main_play_btn.text != 'Play':
+            self.ids.main_play_btn.text = 'Play'
+        elif not PlaybackController.get_pause() and self.ids.main_play_btn.text != 'Pause':
+            self.ids.main_play_btn.text = 'Pause'
+
+    def back_btn_press(self):
+        PlaybackController.back()
+        PlaybackController.debug_print("PlaylistView back_btn_press")
+
+    def play_btn_press(self):
+        PlaybackController.toggle_pause()
+
+    def skip_btn_press(self):
+        PlaybackController.skip()
+        PlaybackController.debug_print("PlaylistView skip_btn_press")
 
 class MainMenu(Screen):
     def __init__(self, **kwargs):

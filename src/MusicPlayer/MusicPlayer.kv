@@ -171,6 +171,7 @@
         background_normal: ''
         background_color: btn_color
         on_press: root.play_btn()
+
     Label:
         id: pr_name
         text: root.name
@@ -318,3 +319,107 @@
                 background_normal: ''
                 background_color: dark1
 
+<PlaylistView>:
+    name: 'PlaylistView'
+
+    Boxlayout:
+        orientation: 'vertical'
+        size_hint: (1,1)
+
+        #color
+        canvas.before:
+            Color:
+                rgba:bg_color
+            Rectangle:
+                pos:self.pos
+                size:self.size
+
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: 0.4
+
+        RecycleView:
+            id: song_list
+            size_hint_y: 0.5
+            do_scroll_x: False
+            do_scroll_y: True
+            viewclass: 'Playlist_Row'
+            RecycleBoxLayout:
+                default_size: None, dp(48)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+
+
+        BoxLayout:
+            size_hint_y: 0.1
+            orientation: 'horizontal'
+
+            Button:
+                id: open_music_menu_btn
+                on_press: root.open_music_menu()
+                size_hint_x: 0.1
+                text: 'Back'
+                background_normal: ''
+                background_color: dark1
+
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.4
+                Label:
+                    id: cur_title_label
+                    text: "No Song Info"
+                    size_hint_y: 0.5
+                    canvas.before:
+                        Color:
+                            rgba:dark1
+                        Rectangle:
+                            pos:self.pos
+                            size:self.size
+                Label:
+                    id: cur_artist_label
+                    text: "No Artist Info"
+                    size_hint_y: 0.5
+                    canvas.before:
+                        Color:
+                            rgba:dark1
+                        Rectangle:
+                            pos:self.pos
+                            size:self.size
+
+            Label:
+                id: cur_duration_label
+                text: '0:00/0:00'
+                size_hint_x: 0.2
+                canvas.before:
+                    Color:
+                        rgba:dark1
+                    Rectangle:
+                        pos:self.pos
+                        size:self.size
+
+
+            Button:
+                id: main_back_btn
+                on_press: root.back_btn_press()
+                size_hint_x: 0.1
+                text: '<<'
+                background_normal: ''
+                background_color: dark1
+
+            Button:
+                id: main_play_btn
+                on_press: root.play_btn_press()
+                size_hint_x: 0.1
+                text: 'Play'
+                background_normal: ''
+                background_color: dark1
+
+            Button:
+                id: main_skip_btn
+                on_press: root.skip_btn_press()
+                size_hint_x: 0.1
+                text: '>>'
+                background_normal: ''
+                background_color: dark1

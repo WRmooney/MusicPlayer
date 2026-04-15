@@ -391,8 +391,6 @@ class PlaybackManager:
         # get list of all song ids, set scope
         queue = songs
         self.scope.extend(queue)
-        print("QUEUE IN PLAYLIST START: " + str(queue))
-        print("IN PLAYLIST START: SCOPE IS: " + str(self.scope))
 
         # check shuffle, adjust queue accordingly
         if self.shuffle:
@@ -403,14 +401,9 @@ class PlaybackManager:
             self.queue = queue
         else:
             # set first song to current, pop from queue
-            print(self.scope)
             self.currentSongId = queue[0]
-            print(self.scope)
             self.queue = queue
-            print(self.scope)
             self.queue.pop(0)
-
-        print(self.scope)
 
         self.debug_print("Play from playlist")
         self.start(songs)
