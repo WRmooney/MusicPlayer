@@ -52,37 +52,11 @@ class PlaybackManager:
             return
         else: # initialize current song
             self.curSong = MediaPlayer(self.get_info()["filepath"],
-                                       ff_opts={"paused": self.paused if first else False},ss=0.0)
+                                       ff_opts={"paused": first},ss=0.0)
 
-        # check queue and priority queue, add scope if empty
-        if self.priorityQueue != []:
-            # priority queue has something, set nextSong
-            self.nextSongId = self.priorityQueue[0]
-            self.nextSong = MediaPlayer(self.get_info(self.nextSongId)["filepath"],
-                                        ff_opts={"paused": True}, ss=0.0)
-        elif self.queue != [] and self.priorityQueue == []:
-            # priority queue is empty, queue is not empty, set nextSong
-            self.nextSongId = self.queue[0]
-            self.nextSong = MediaPlayer(self.get_info(self.nextSongId)["filepath"],
-                                        ff_opts={"paused":True}, ss=0.0)
-        elif self.queue == [] and self.priorityQueue == []:
-            if self.scope != []:
-                self.queue.append(self.scope)
-            else:
-                self.queue.append(self.currentSongId)
-                self.scope = [self.currentSongId]
-            self.nextSongId = self.queue[0]
-            self.nextSong = MediaPlayer(self.get_info(self.nextSongId)["filepath"],
-                                        ff_opts={"paused": True}, ss=0.0)
-
-        # check previous stack
-        if self.previouslyPlayed == []:
-            self.prevSongId = ""
-            self.prevSong = None
-        else:
-            self.prevSongId = self.previouslyPlayed[-1]
-            self.prevSong = MediaPlayer(self.get_info(self.prevSongId)["filepath"],
-                                        ff_opts={"paused": True}, ss=0.0)
+        # set next and previous songs
+        self.set_next_song()
+        self.set_prev_song()
 
         # Call self.update() every 0.1 secs, only on first call
         if first:
@@ -379,10 +353,12 @@ class PlaybackManager:
         queue = sorted(list(songs["songs"].keys()), key=lambda x: songs["songs"][x]["title"])
         self.scope = queue
 
+
         # check shuffle, adjust queue accordingly
         if self.shuffle:
             # remove current song, shuffle the rest
-            self.queue.remove(song_id)
+
+            queue.remove(song_id)
             random.shuffle(queue)
             self.queue = queue
         else:
@@ -394,6 +370,7 @@ class PlaybackManager:
         self.debug_print("Play from songs")
 
         self.start(songs["songs"])
+        self.paused = False
 
         for func in self.funcs_to_call:
             func.update_info()

@@ -1,24 +1,23 @@
 {
     "directory": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1",
     "loop": true,
-    "shuffle": false,
-    "previous_queue": [],
-    "current_song_id": "5",
+    "shuffle": true,
+    "previous_queue": [
+        "3",
+        "10",
+        "2",
+        "4",
+        "7",
+        "1",
+        "8",
+        "5"
+    ],
+    "current_song_id": "9",
     "priority_queue": [],
-    "queue":
-        [
-
+    "queue": [
+        "6"
     ],
     "scope": [
-        "3",
-        "4",
-        "9",
-        "10",
-        "5",
-        "8",
-        "1",
-        "2",
-        "6",
-        "7"
+        "6"
     ]
 }
