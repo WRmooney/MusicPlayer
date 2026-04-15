@@ -4,20 +4,21 @@
     "shuffle": false,
     "previous_queue": [
         "3",
-        "10",
+        "6",
         "2",
         "4",
-        "7",
-        "1",
-        "8",
-        "5"
+        "3",
+        "6"
     ],
-    "current_song_id": "9",
+    "current_song_id": "2",
     "priority_queue": [],
     "queue": [
-        "6"
+        "4"
     ],
     "scope": [
-        "6"
+        "3",
+        "6",
+        "2",
+        "4"
     ]
 }

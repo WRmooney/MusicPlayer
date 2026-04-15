@@ -382,6 +382,7 @@ class PlaybackManager:
         # empty queues
         self.previouslyPlayed = []
         self.priorityQueue = []
+        self.scope = []
         self.prevSong = None
         self.curSong = None
         self.nextSong = None
@@ -389,7 +390,7 @@ class PlaybackManager:
         self.nextSongId = ""
         # get list of all song ids, set scope
         queue = songs
-        self.scope = queue
+        self.scope.extend(queue)
         print("QUEUE IN PLAYLIST START: " + str(queue))
         print("IN PLAYLIST START: SCOPE IS: " + str(self.scope))
 
