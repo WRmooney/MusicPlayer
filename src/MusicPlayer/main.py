@@ -108,7 +108,7 @@ class Song_Row(RecycleDataViewBehavior, BoxLayout):
 
     def play_btn(self):
         # set scope, set current song, set queue, empty pqueue, empty prevplayed
-        PlaybackController.play_from_songs(self.id, songs)
+        PlaybackController.play_from_songs(self.id, songs["songs"])
 
 # class to display song and info in songs/playlists view
 class Playlist_Row(RecycleDataViewBehavior, BoxLayout):
@@ -134,6 +134,13 @@ class Playlist_Row(RecycleDataViewBehavior, BoxLayout):
         self.ids.pr_name.text = value.get('name', 'Empty')
         self.ids.pr_count.text = self.song_count
         self.ids.pr_duration.text = time.strftime('%M:%S', time.gmtime(self.total_length))
+
+    def play_btn(self):
+        # call play from songs using current playlist list
+        PlaybackController.play_from_playlist(self.song_list)
+        print("Playing Playlist: " + str(self.name))
+        for song in self.song_list:
+            print(PlaybackController.get_info(song)["title"])
 
 class MusicMenu(Screen):
 

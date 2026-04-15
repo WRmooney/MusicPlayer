@@ -1,7 +1,7 @@
 {
     "directory": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1",
     "loop": true,
-    "shuffle": true,
+    "shuffle": false,
     "previous_queue": [
         "3",
         "10",

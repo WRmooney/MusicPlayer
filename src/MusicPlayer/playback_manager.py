@@ -34,10 +34,9 @@ class PlaybackManager:
         self.stop_event = threading.Event()
 
     def start(self, songs, first=False):
-
         # Check all songs and ensure they exist
-        self.checkSongIds(songs)
-
+        if first:
+            self.checkSongIds(songs)
 
         # Check current Song id
         if self.currentSongId == "":
@@ -75,7 +74,7 @@ class PlaybackManager:
         # check current song id
         if self.currentSongId not in songs:
             self.currentSongId = ""
-            print()
+            print("Current song id not in songs!")
 
         # check previously played
         for songid in self.previouslyPlayed:
@@ -195,6 +194,7 @@ class PlaybackManager:
         print("CURRENT SONG NAME: " + str(self.get_info()["title"]))
         print("PRIORITY QUEUE: " + str(self.priorityQueue))
         print("QUEUE: " + str(self.queue))
+        print("SCOPE: " + str(self.scope))
 
     # get the next song id and set next song id, open next song player using thread
     def set_next_song(self):
@@ -220,6 +220,8 @@ class PlaybackManager:
             self.queue.extend(self.scope)
             if self.shuffle:
                 self.shuffle_queue()
+            print(self.queue)
+            print(self.scope)
             nextSongId = self.queue[0]
         return nextSongId
 
@@ -350,7 +352,8 @@ class PlaybackManager:
         self.prevSongId = ""
         self.nextSongId = ""
         # get list of all song ids, set scope
-        queue = sorted(list(songs["songs"].keys()), key=lambda x: songs["songs"][x]["title"])
+        queue = sorted(list(songs.keys()), key=lambda x: songs[x]["title"])
+        print("QUEUE IN SONGS START: " + str(queue))
         self.scope = queue
 
 
@@ -369,13 +372,50 @@ class PlaybackManager:
 
         self.debug_print("Play from songs")
 
-        self.start(songs["songs"])
+        self.start(songs)
         self.paused = False
 
         for func in self.funcs_to_call:
             func.update_info()
 
+    def play_from_playlist(self, songs):
+        # empty queues
+        self.previouslyPlayed = []
+        self.priorityQueue = []
+        self.prevSong = None
+        self.curSong = None
+        self.nextSong = None
+        self.prevSongId = ""
+        self.nextSongId = ""
+        # get list of all song ids, set scope
+        queue = songs
+        self.scope = queue
+        print("QUEUE IN PLAYLIST START: " + str(queue))
+        print("IN PLAYLIST START: SCOPE IS: " + str(self.scope))
 
+        # check shuffle, adjust queue accordingly
+        if self.shuffle:
+            # remove current song, shuffle the rest
+            self.currentSongId = queue[random.randint(0, len(queue)-1)]
+            queue.remove(self.currentSongId)
+            random.shuffle(queue)
+            self.queue = queue
+        else:
+            # set first song to current, pop from queue
+            print(self.scope)
+            self.currentSongId = queue[0]
+            print(self.scope)
+            self.queue = queue
+            print(self.scope)
+            self.queue.pop(0)
 
+        print(self.scope)
+
+        self.debug_print("Play from playlist")
+        self.start(songs)
+        self.paused = False
+
+        for func in self.funcs_to_call:
+            func.update_info()
 
 
