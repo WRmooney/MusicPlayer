@@ -33,12 +33,10 @@ class PlaybackManager:
         self.thread = threading.Thread(target=self.timer_loop, daemon=True)
         self.stop_event = threading.Event()
 
-    def start(self, songs):
-
+    def start(self, songs, first=False):
 
         # Check all songs and ensure they exist
         self.checkSongIds(songs)
-
 
 
         # Check current Song id
@@ -54,7 +52,7 @@ class PlaybackManager:
             return
         else: # initialize current song
             self.curSong = MediaPlayer(self.get_info()["filepath"],
-                                       ff_opts={"paused": self.paused},ss=0.0)
+                                       ff_opts={"paused": self.paused if first else False},ss=0.0)
 
         # check queue and priority queue, add scope if empty
         if self.priorityQueue != []:
@@ -86,10 +84,11 @@ class PlaybackManager:
             self.prevSong = MediaPlayer(self.get_info(self.prevSongId)["filepath"],
                                         ff_opts={"paused": True}, ss=0.0)
 
+        # Call self.update() every 0.1 secs, only on first call
+        if first:
+            self.start_timer()
 
-
-        # Call self.update() every 0.1 secs
-        self.start_timer()
+        self.debug_print("Start")
 
     def start_timer(self):
         self.thread.start()
@@ -102,26 +101,29 @@ class PlaybackManager:
         # check current song id
         if self.currentSongId not in songs:
             self.currentSongId = ""
+            print()
 
         # check previously played
-        for id in self.previouslyPlayed:
-            if id not in songs:
-                self.previouslyPlayed.remove(id)
+        for songid in self.previouslyPlayed:
+
+            if songid not in songs:
+                self.previouslyPlayed.remove(songid)
+
 
         # check priority queue
-        for id in self.priorityQueue:
-            if id not in songs:
-                self.priorityQueue.remove(id)
+        for songid in self.priorityQueue:
+            if songid not in songs:
+                self.priorityQueue.remove(songid)
 
         # check regular queue
-        for id in self.queue:
-            if id not in songs:
-                self.queue.remove(id)
+        for songid in self.queue:
+            if songid not in songs:
+                self.queue.remove(songid)
 
         # check scope
-        for id in self.scope:
-            if id not in songs:
-                self.scope.remove(id)
+        for songid in self.scope:
+            if songid not in songs:
+                self.scope.remove(songid)
 
     def update(self):
         if self.curSong is not None:
@@ -210,26 +212,31 @@ class PlaybackManager:
         for func in self.funcs_to_call:
             func.update_info()
 
+    # prints queue info
     def debug_print(self, function_name):
         print("\n")
         print("CALLED FROM: " + function_name)
         print("PREVIOUSLY PLAYED: " + str(self.previouslyPlayed))
         print("CURRENT SONG: " + str(self.curSong))
+        print("CURRENT SONG NAME: " + str(self.get_info()["title"]))
         print("PRIORITY QUEUE: " + str(self.priorityQueue))
         print("QUEUE: " + str(self.queue))
 
+    # get the next song id and set next song id, open next song player using thread
     def set_next_song(self):
         # update id
         self.nextSongId = self.get_next_id()
         # use multithreading to load the song in the background
         threading.Thread(target=self.load_song, args=("next", self.nextSongId), daemon=True).start()
 
+    # get the previous song and open the player with a thread
     def set_prev_song(self):
         # Update id
         self.prevSongId = self.get_prev_id()
         # use multithreading to load the song in the background
         threading.Thread(target=self.load_song, args=("prev", self.prevSongId), daemon=True).start()
 
+    # returns the id of the next song based on queues, extends queue using scope if empty
     def get_next_id(self):
         if self.priorityQueue != []:
             nextSongId = self.priorityQueue[0]
@@ -356,3 +363,42 @@ class PlaybackManager:
         pref_ref["priority_queue"] = self.priorityQueue
         pref_ref["queue"] = self.queue
         pref_ref["scope"] = self.scope
+
+    # Start playing from all songs (mainmenu)
+    def play_from_songs(self, song_id, songs):
+        # empty queues
+        self.previouslyPlayed = []
+        self.currentSongId = song_id
+        self.priorityQueue = []
+        self.prevSong = None
+        self.curSong = None
+        self.nextSong = None
+        self.prevSongId = ""
+        self.nextSongId = ""
+        # get list of all song ids, set scope
+        queue = sorted(list(songs["songs"].keys()), key=lambda x: songs["songs"][x]["title"])
+        self.scope = queue
+
+        # check shuffle, adjust queue accordingly
+        if self.shuffle:
+            # remove current song, shuffle the rest
+            self.queue.remove(song_id)
+            random.shuffle(queue)
+            self.queue = queue
+        else:
+            # remove current song and ALL songs before it
+            cur_index = queue.index(song_id)
+            queue = queue[cur_index+1:]
+            self.queue = queue
+
+        self.debug_print("Play from songs")
+
+        self.start(songs["songs"])
+
+        for func in self.funcs_to_call:
+            func.update_info()
+
+
+
+
+

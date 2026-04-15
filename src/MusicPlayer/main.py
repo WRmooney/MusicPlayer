@@ -64,6 +64,16 @@ except:
 sm = ScreenManager()
 PlaybackController = None
 
+"""
+**TODO**
+Add to queue buttons
+Play button functionality on mainmenu
+add playlist view
+add queue view in musicmenu and mainmenu
+add current scope name for queue view (ex. Playing from: My Playlist 1)
+playlists should not play if they are empty
+"""
+
 # custom slider, important for functionality
 class CustomSlider(Slider):
     def on_touch_down(self, touch):
@@ -98,7 +108,7 @@ class Song_Row(RecycleDataViewBehavior, BoxLayout):
 
     def play_btn(self):
         # set scope, set current song, set queue, empty pqueue, empty prevplayed
-        pass
+        PlaybackController.play_from_songs(self.id, songs)
 
 # class to display song and info in songs/playlists view
 class Playlist_Row(RecycleDataViewBehavior, BoxLayout):
@@ -345,7 +355,7 @@ class MusicPlayerApp(App):
         )
 
         # After initializing the queues, start playback controller
-        PlaybackController.start(songs["songs"])
+        PlaybackController.start(songs["songs"], True)
 
         # MAKE CURRENT SCREEN LOAD FIRST
         sm.add_widget(MusicMenu(name="MusicMenu"))
