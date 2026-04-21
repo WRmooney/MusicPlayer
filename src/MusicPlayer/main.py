@@ -15,9 +15,10 @@ from kivy.clock import Clock, mainthread
 from kivy.uix.boxlayout import BoxLayout
 from kivy.core.window import Window
 from kivy.uix.slider import Slider
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, FallOutTransition, RiseInTransition
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.behaviors import ButtonBehavior
+
 
 
 
@@ -58,13 +59,18 @@ PlaybackController = None
 
 """
 **TODO**
-Make playlists clickable
-Add to queue buttons
+make sort by button dropdown
+make adding playlists with modal popup
+make adding songs to playlist with playlist view
+make screen preservation, ie remember previous screen/tab
+prevent text overflow, make better formatting
 add queue view in musicmenu and mainmenu
 add current scope name for queue view (ex. Playing from: My Playlist 1)
 playlists should not play if they are empty
 """
 
+""" Custom Kivy Classes """
+#region
 # custom slider, important for functionality
 class CustomSlider(Slider):
     def on_touch_down(self, touch):
@@ -100,7 +106,7 @@ class Song_Row(RecycleDataViewBehavior, BoxLayout):
 
     def play_btn(self):
         # set scope, set current song, set queue, empty pqueue, empty prevplayed
-        if sm.current == 'MusicMenu':
+        if sm.current == 'MainMenu':
             PlaybackController.play_from_songs(self.id, songs["songs"])
         elif sm.current == 'PlaylistView':
             sm.get_screen('PlaylistView').play_from_playlist(self.index)
@@ -138,9 +144,20 @@ class Playlist_Row(RecycleDataViewBehavior, BoxLayout):
         print("Playing Playlist: " + str(self.name))
 
     def view_playlist(self):
+        sm.transition = RiseInTransition()
         sm.current = 'PlaylistView'
         sm.get_screen('PlaylistView').update_view(self)
+        sm.get_screen('MusicMenu').prev_screen = 'PlaylistView'
 
+# Clickable layout for playlist_row
+class Clickable_Layout(ButtonBehavior, BoxLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+#endregion
+
+""" Main Screens """
+#region
 class MusicMenu(Screen):
 
     def __init__(self, **kwargs):
@@ -149,6 +166,7 @@ class MusicMenu(Screen):
 
         PlaybackController.funcs_to_call.append(self)
         self.update_info()
+        self.prev_screen = 'MainMenu'
 
     def update(self, *args):
         # DISABLE BUTTONS ON VARIOUS CONDITIONS
@@ -240,7 +258,9 @@ class MusicMenu(Screen):
         PlaybackController.debug_print("shuffle_queue")
 
     def back_screen_btn(self):
-        sm.current = 'MainMenu'
+        sm.transition = SlideTransition()
+        sm.transition.direction = 'down'
+        sm.current = self.prev_screen
 
 class PlaylistView(Screen):
     def __init__(self, **kwargs):
@@ -258,6 +278,8 @@ class PlaylistView(Screen):
         self.ids.song_list.data = [{'info': songs["songs"][song_list[i]], 'id': song_list[i], 'index': i} for i in range(len(song_list))]
 
     def open_music_menu(self):
+        sm.transition = SlideTransition()
+        sm.transition.direction = 'up'
         sm.current = 'MusicMenu'
 
     @mainthread
@@ -307,6 +329,11 @@ class PlaylistView(Screen):
     def play_from_playlist(self, index):
         PlaybackController.play_song_in_playlist(self.cur_playlist.song_list, index)
 
+    def back_screen_btn(self):
+        sm.transition = FallOutTransition()
+        sm.current = 'MainMenu'
+        sm.get_screen('MusicMenu').prev_screen = 'MainMenu'
+
 class MainMenu(Screen):
     def __init__(self, **kwargs):
         super(MainMenu, self).__init__(**kwargs)
@@ -323,6 +350,10 @@ class MainMenu(Screen):
         # now we have a sorted list of each song as a dictionary, put it in the recycle view
         self.ids.main_song_list.data = [{'info': songs["songs"][key], 'id': key} for key in key_list]
 
+        # remove add playlist button
+        self.ids.add_playlist_btn.opacity = 0
+        self.ids.add_playlist_btn.disabled = True
+
     def display_playlists(self):
         global playlists
 
@@ -335,6 +366,10 @@ class MainMenu(Screen):
                                          'song_count': playlists_sorted[i]["song_count"],
                                          'total_length': playlists_sorted[i]["total_length"]}
                                         for i in range(len(playlists_sorted))]
+
+        # create add playlist button
+        self.ids.add_playlist_btn.opacity = 1
+        self.ids.add_playlist_btn.disabled = False
 
     def update_tab(self):
         if self.ids.main_song_list.viewclass == Song_Row:
@@ -354,6 +389,8 @@ class MainMenu(Screen):
         self.update_tab()
 
     def open_music_menu(self):
+        sm.transition = SlideTransition()
+        sm.transition.direction = 'up'
         sm.current = 'MusicMenu'
 
     @mainthread
@@ -396,6 +433,11 @@ class MainMenu(Screen):
         PlaybackController.skip()
         PlaybackController.debug_print("MainMenu skip_btn_press")
 
+
+#endregion
+
+""" Main App Classes + Main startup """
+#region
 class MusicPlayerApp(App):
     def build(self):
         global songs
@@ -446,3 +488,4 @@ class MusicPlayerApp(App):
 
 if __name__ == '__main__':
     MusicPlayerApp().run()
+#endregion

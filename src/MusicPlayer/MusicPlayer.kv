@@ -172,22 +172,24 @@
         background_normal: ''
         background_color: btn_color
         on_press: root.play_btn()
-
-    Label:
-        id: pr_name
-        text: root.name
-        text_size: self.size
-        halign: 'left'
-        valign: 'middle'
-        size_hint_x: 0.4
-    Label:
-        id: pr_count
-        text: str(root.song_count) + ' songs'
-        size_hint_x: 0.3
-    Label:
-        id: pr_duration
-        text: time.strftime('%M:%S', time.gmtime(root.total_length))
-        size_hint_x: 0.1
+    Clickable_Layout:
+        size_hint_x: 0.8
+        on_press: root.view_playlist()
+        Label:
+            id: pr_name
+            text: root.name
+            text_size: self.size
+            halign: 'left'
+            valign: 'middle'
+            size_hint_x: 0.4
+        Label:
+            id: pr_count
+            text: str(root.song_count) + ' songs'
+            size_hint_x: 0.3
+        Label:
+            id: pr_duration
+            text: time.strftime('%M:%S', time.gmtime(root.total_length))
+            size_hint_x: 0.1
     Button:
         text: 'View'
         size_hint_x: 0.1
@@ -195,6 +197,8 @@
         background_normal: ''
         background_color: btn_color
         on_press: root.view_playlist()
+
+
 
 <MainMenu>:
     name: 'MainMenu'
@@ -212,7 +216,7 @@
                 size:self.size
 
         BoxLayout:
-            size_hint_y: 0.2
+            size_hint_y: 0.15
             orientation: 'horizontal'
 
             ToggleButton:
@@ -235,6 +239,21 @@
                 background_normal: ''
                 background_down: ''
                 background_color: dark1 if self.state == 'normal' else dark2
+
+        BoxLayout:
+            id: main_menu_functions
+            size_hint_y: 0.05
+            orientation: 'horizontal'
+
+            Label:
+                size_hint_x: 0.5
+                text: 'Sort by: '
+
+            Button:
+                id: add_playlist_btn
+                size_hint_x: 0.5
+                text: 'Add Playlist'
+
 
         RecycleView:
             id: main_song_list
@@ -337,8 +356,31 @@
                 size:self.size
 
         BoxLayout:
-            orientation: 'horizontal'
+            orientation: 'vertical'
             size_hint_y: 0.3
+
+            # back button
+            AnchorLayout:
+                size_hint_y: 0.4
+                anchor_x: "left"
+                anchor_y: "top"
+                padding: [25,25,0,0]
+                Button:
+                    id: back_screen_btn
+                    on_press: root.back_screen_btn()
+                    text: "Back"
+                    size_hint_y: 0.8
+                    size_hint_x: 0.1
+                    background_normal: ''
+                    background_color: btn_color
+
+            Label:
+                size_hint_y: 0.3
+                text: 'Playlist Name'
+
+            Label:
+                size_hint_y: 0.3
+                text: 'Number of Songs'
 
         RecycleView:
             id: song_list

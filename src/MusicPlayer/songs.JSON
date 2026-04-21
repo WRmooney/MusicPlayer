@@ -69,6 +69,69 @@
             "duration": 279.0138775510204,
             "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\pt5.mp3",
             "filename": "pt5.mp3"
+        },
+        "11": {
+            "title": "Chanbara",
+            "artist": "Shing02 - Topic",
+            "duration": 155.45469387755102,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Chanbara.mp3",
+            "filename": "Chanbara.mp3"
+        },
+        "12": {
+            "title": "Galactic Warp",
+            "artist": "Sauce81 - Topic",
+            "duration": 292.59755102040816,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Galactic Warp.mp3",
+            "filename": "Galactic Warp.mp3"
+        },
+        "13": {
+            "title": "Hi-Coast",
+            "artist": "Shing02 - Topic",
+            "duration": 243.01714285714286,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Hi.mp3",
+            "filename": "Hi.mp3"
+        },
+        "14": {
+            "title": "Nujabes - Steadfast . Track 07",
+            "artist": "DIVAZ",
+            "duration": 252.26448979591837,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Nujabes Steadfast.Track 07.mp3",
+            "filename": "Nujabes Steadfast.Track 07.mp3"
+        },
+        "15": {
+            "title": "Nujabes - Strive feat Apani B . Track 03",
+            "artist": "DIVAZ",
+            "duration": 262.89632653061227,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Nujabes Strive feat Apani B.Track 03.mp3",
+            "filename": "Nujabes Strive feat Apani B.Track 03.mp3"
+        },
+        "16": {
+            "title": "Nujabes - Voice of Autumn [Official Audio]",
+            "artist": "Nujabes",
+            "duration": 116.11428571428571,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Nujabes Voice of Autumn Official Audio.mp3",
+            "filename": "Nujabes Voice of Autumn Official Audio.mp3"
+        },
+        "17": {
+            "title": "Parallel Universe",
+            "artist": "Shing02 - Topic",
+            "duration": 279.7191836734694,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Parallel Universe.mp3",
+            "filename": "Parallel Universe.mp3"
+        },
+        "18": {
+            "title": "Uyama Hiroto  - Waltz for life will born [Official Audio]",
+            "artist": "Nujabes",
+            "duration": 292.0489795918367,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Uyama.mp3",
+            "filename": "Uyama.mp3"
+        },
+        "19": {
+            "title": "Walkin (Cold Blooded Soul Version)",
+            "artist": "Denzel Curry - Topic",
+            "duration": 165.64244897959185,
+            "filepath": "C:/Users/w_mooney/PycharmProjects/MusicPlayer/resources/test1\\Walkin Cold Blooded Soul Version.mp3",
+            "filename": "Walkin Cold Blooded Soul Version.mp3"
         }
     }
 }
