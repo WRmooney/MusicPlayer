@@ -155,11 +155,12 @@
         text: time.strftime('%M:%S', time.gmtime(root.info.get('duration', 0)))
         size_hint_x: 0.1
     Button:
-        text: '...'
+        text: 'Add to Queue'
         size_hint_x: 0.1
         size_hint_y: 0.95
         background_normal: ''
         background_color: btn_color
+        on_press: root.add_to_queue()
 
 <Playlist_Row>:
     height: 100
@@ -188,7 +189,7 @@
         text: time.strftime('%M:%S', time.gmtime(root.total_length))
         size_hint_x: 0.1
     Button:
-        text: '...'
+        text: 'View'
         size_hint_x: 0.1
         size_hint_y: 0.95
         background_normal: ''
@@ -337,7 +338,7 @@
 
         BoxLayout:
             orientation: 'horizontal'
-            size_hint_y: 0.4
+            size_hint_y: 0.3
 
         RecycleView:
             id: song_list

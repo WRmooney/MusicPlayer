@@ -10,21 +10,14 @@ os.environ["KIVY_AUDIO"] = "ffpyplayer"
 
 # Kivy Imports (there's a lot, I know)
 from kivy.app import App
-from kivy.uix.label import Label
-from kivy.uix.widget import Widget
-from kivy.properties import NumericProperty, ReferenceListProperty, ObjectProperty, StringProperty, DictProperty, ListProperty, NumericProperty
-from kivy.vector import Vector
+from kivy.properties import ReferenceListProperty, ObjectProperty, StringProperty, DictProperty, ListProperty, NumericProperty
 from kivy.clock import Clock, mainthread
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.stacklayout import StackLayout
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
 from kivy.core.window import Window
-from kivy.core.image import Image as CoreImage
 from kivy.uix.slider import Slider
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.core.audio import SoundLoader
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
+from kivy.uix.behaviors import ButtonBehavior
 
 
 
@@ -65,8 +58,8 @@ PlaybackController = None
 
 """
 **TODO**
+Make playlists clickable
 Add to queue buttons
-add playlist view
 add queue view in musicmenu and mainmenu
 add current scope name for queue view (ex. Playing from: My Playlist 1)
 playlists should not play if they are empty
@@ -111,6 +104,9 @@ class Song_Row(RecycleDataViewBehavior, BoxLayout):
             PlaybackController.play_from_songs(self.id, songs["songs"])
         elif sm.current == 'PlaylistView':
             sm.get_screen('PlaylistView').play_from_playlist(self.index)
+
+    def add_to_queue(self):
+        PlaybackController.add_to_queue(self.id)
 
 # class to display song and info in songs/playlists view
 class Playlist_Row(RecycleDataViewBehavior, BoxLayout):

@@ -445,3 +445,8 @@ class PlaybackManager:
 
         for func in self.funcs_to_call:
             func.update_info()
+
+    def add_to_queue(self, song_id):
+        self.priorityQueue.append(song_id)
+        self.update_next_song()
+        self.debug_print("Add_to_queue")
