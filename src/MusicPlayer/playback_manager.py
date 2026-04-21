@@ -389,7 +389,8 @@ class PlaybackManager:
         self.prevSongId = ""
         self.nextSongId = ""
         # get list of all song ids, set scope
-        queue = songs
+        queue = []
+        queue.extend(songs)
         self.scope.extend(queue)
 
         # check shuffle, adjust queue accordingly
@@ -424,7 +425,8 @@ class PlaybackManager:
         self.prevSongId = ""
         self.nextSongId = ""
         # get list of all song ids, set scope
-        queue = playlist
+        queue = []
+        queue.extend(playlist)
         self.scope.extend(queue)
 
         # check shuffle, adjust queue accordingly
