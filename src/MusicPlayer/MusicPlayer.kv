@@ -193,6 +193,7 @@
         size_hint_y: 0.95
         background_normal: ''
         background_color: btn_color
+        on_press: root.view_playlist()
 
 <MainMenu>:
     name: 'MainMenu'
@@ -322,7 +323,7 @@
 <PlaylistView>:
     name: 'PlaylistView'
 
-    Boxlayout:
+    BoxLayout:
         orientation: 'vertical'
         size_hint: (1,1)
 
@@ -343,7 +344,7 @@
             size_hint_y: 0.5
             do_scroll_x: False
             do_scroll_y: True
-            viewclass: 'Playlist_Row'
+            viewclass: 'Song_Row'
             RecycleBoxLayout:
                 default_size: None, dp(48)
                 default_size_hint: 1, None

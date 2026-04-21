@@ -412,4 +412,36 @@ class PlaybackManager:
         for func in self.funcs_to_call:
             func.update_info()
 
+    def play_song_in_playlist(self, playlist, index):
+        # empty queues
+        self.previouslyPlayed = []
+        self.currentSongId = playlist[index]
+        self.priorityQueue = []
+        self.scope = []
+        self.prevSong = None
+        self.curSong = None
+        self.nextSong = None
+        self.prevSongId = ""
+        self.nextSongId = ""
+        # get list of all song ids, set scope
+        queue = playlist
+        self.scope.extend(queue)
 
+        # check shuffle, adjust queue accordingly
+        if self.shuffle:
+            # remove current song, shuffle the rest
+            queue.remove_at(index)
+            random.shuffle(queue)
+            self.queue = queue
+        else:
+            # remove current song and ALL songs before it
+            queue = queue[index + 1:]
+            self.queue = queue
+
+        self.debug_print("Play from inside playlistview")
+
+        self.start(playlist)
+        self.paused = False
+
+        for func in self.funcs_to_call:
+            func.update_info()

@@ -88,6 +88,7 @@ class CustomSlider(Slider):
 class Song_Row(RecycleDataViewBehavior, BoxLayout):
     info = DictProperty({})
     id = StringProperty('')
+    index = NumericProperty(0)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -106,7 +107,10 @@ class Song_Row(RecycleDataViewBehavior, BoxLayout):
 
     def play_btn(self):
         # set scope, set current song, set queue, empty pqueue, empty prevplayed
-        PlaybackController.play_from_songs(self.id, songs["songs"])
+        if sm.current == 'MusicMenu':
+            PlaybackController.play_from_songs(self.id, songs["songs"])
+        elif sm.current == 'PlaylistView':
+            sm.get_screen('PlaylistView').play_from_playlist(self.index)
 
 # class to display song and info in songs/playlists view
 class Playlist_Row(RecycleDataViewBehavior, BoxLayout):
@@ -136,6 +140,10 @@ class Playlist_Row(RecycleDataViewBehavior, BoxLayout):
         # call play from songs using current playlist list
         PlaybackController.play_from_playlist(self.song_list)
         print("Playing Playlist: " + str(self.name))
+
+    def view_playlist(self):
+        sm.current = 'PlaylistView'
+        sm.get_screen('PlaylistView').update_view(self)
 
 class MusicMenu(Screen):
 
@@ -251,7 +259,7 @@ class PlaylistView(Screen):
         song_list = self.cur_playlist.song_list
 
         # put songs in recycle view
-        self.ids.song_list.data = [{'info': songs["songs"][songid], 'id': songid} for songid in song_list]
+        self.ids.song_list.data = [{'info': songs["songs"][song_list[i]], 'id': song_list[i], 'index': i} for i in range(len(song_list))]
 
     def open_music_menu(self):
         sm.current = 'MusicMenu'
@@ -295,6 +303,13 @@ class PlaylistView(Screen):
     def skip_btn_press(self):
         PlaybackController.skip()
         PlaybackController.debug_print("PlaylistView skip_btn_press")
+
+    def update_view(self, playlistref):
+        self.cur_playlist = playlistref
+        self.display_songs()
+
+    def play_from_playlist(self, index):
+        PlaybackController.play_song_in_playlist(self.cur_playlist.song_list, index)
 
 class MainMenu(Screen):
     def __init__(self, **kwargs):
@@ -420,6 +435,7 @@ class MusicPlayerApp(App):
         # MAKE CURRENT SCREEN LOAD FIRST
         sm.add_widget(MusicMenu(name="MusicMenu"))
         sm.add_widget(MainMenu(name="MainMenu"))
+        sm.add_widget(PlaylistView(name="PlaylistView"))
         sm.current = 'MusicMenu'
 
         return sm
