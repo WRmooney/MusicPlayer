@@ -536,6 +536,8 @@ class MusicPlayerApp(App):
 
         with open('src/MusicPlayer/preferences.json', 'w') as pref_j:
             json.dump(preferences, pref_j, indent=4)
+        with open('src/MusicPlayer/playlists.json', 'w') as playlists_j:
+            json.dump(playlists, playlists_j, indent=4)
 
 if __name__ == '__main__':
     MusicPlayerApp().run()
