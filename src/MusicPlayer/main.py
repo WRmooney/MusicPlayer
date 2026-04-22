@@ -22,6 +22,7 @@ from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
+from kivy.uix.dropdown import DropDown
 
 
 
@@ -68,7 +69,6 @@ make adding songs to playlist with playlist view
 prevent text overflow, make better formatting
 add queue view in musicmenu and mainmenu
 add current scope name for queue view (ex. Playing from: My Playlist 1)
-playlists should not play if they are empty
 """
 
 """ Custom Kivy Classes """
@@ -125,6 +125,8 @@ class Playlist_Row(RecycleDataViewBehavior, BoxLayout):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.dropdown = PlaylistDropDown(self)
+
 
 
     def refresh_view_attrs(self, rv, index, data):
@@ -158,6 +160,20 @@ class Playlist_Row(RecycleDataViewBehavior, BoxLayout):
         sm.current = 'PlaylistView'
         sm.get_screen('PlaylistView').update_view(self)
         sm.get_screen('MusicMenu').prev_screen = 'PlaylistView'
+
+    def open_dropdown(self):
+        self.dropdown.open(self.ids.dropdown_btn)
+
+# custom dropdown for playlists
+class PlaylistDropDown(DropDown):
+    def __init__(self, playlist_ref, **kwargs):
+        super().__init__(**kwargs)
+        self.playlist_ref = playlist_ref
+        self.mainmenu_ref = sm.get_screen('MainMenu')
+
+    def delete_playlist(self):
+        self.mainmenu_ref.delete_playlist(self.playlist_ref.name)
+        self.dismiss()
 
 # Clickable layout for playlist_row
 class Clickable_Layout(ButtonBehavior, BoxLayout):
@@ -194,6 +210,7 @@ class Create_Playlist_Form(BoxLayout):
         else:
             self.ref_to_mainmenu.create_playlist(self.ids.playlist_name_input.text)
             self.popup_ref.dismiss()
+
 
 #endregion
 
@@ -484,6 +501,13 @@ class MainMenu(Screen):
     def create_playlist(self, playlist_name):
         playlists["playlists"].append({'name': playlist_name, 'songs': [], 'song_count': 0, 'total_length': 0})
         self.display_playlists()
+
+    def delete_playlist(self, playlist_name):
+        for playlist in playlists["playlists"]:
+            if playlist["name"] == playlist_name:
+                playlists["playlists"].remove(playlist)
+                self.display_playlists()
+                break
 
 #endregion
 

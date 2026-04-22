@@ -192,13 +192,20 @@
             text: time.strftime('%M:%S', time.gmtime(root.total_length))
             size_hint_x: 0.1
     Button:
+        id: dropdown_btn
         text: '...'
         size_hint_x: 0.1
         size_hint_y: 0.95
         background_normal: ''
         background_color: btn_color
+        on_press: root.open_dropdown()
 
-
+<PlaylistDropDown>:
+    Button:
+        text: 'Delete'
+        size_hint_y: None
+        height: 100
+        on_release: root.delete_playlist()
 
 
 <MainMenu>:

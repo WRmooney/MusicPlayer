@@ -41,6 +41,12 @@
             ],
             "song_count": 4,
             "total_length": 1266.3379591836733
+        },
+        {
+            "name": "New",
+            "songs": [],
+            "song_count": 0,
+            "total_length": 0
         }
     ]
 }
