@@ -166,6 +166,7 @@
     height: 100
     orientation: "horizontal"
     Button:
+        id: playlist_play_button
         text: 'Play'
         size_hint_x: 0.1
         size_hint_y: 0.95
@@ -191,12 +192,12 @@
             text: time.strftime('%M:%S', time.gmtime(root.total_length))
             size_hint_x: 0.1
     Button:
-        text: 'View'
+        text: '...'
         size_hint_x: 0.1
         size_hint_y: 0.95
         background_normal: ''
         background_color: btn_color
-        on_press: root.view_playlist()
+
 
 
 
@@ -253,6 +254,7 @@
                 id: add_playlist_btn
                 size_hint_x: 0.5
                 text: 'Add Playlist'
+                on_press: root.create_playlist_popup()
 
 
         RecycleView:
@@ -467,3 +469,26 @@
                 text: '>>'
                 background_normal: ''
                 background_color: dark1
+
+<Create_Playlist_Form>:
+    orientation: 'vertical'
+
+    Label:
+        size_hint_y: 0.3
+        text: 'Enter Playlist Name:'
+
+    TextInput:
+        id: playlist_name_input
+        size_hint_y: 0.1
+        multiline: False
+
+    Label:
+        size_hint_y: 0.3
+
+    Button:
+        id: create_button
+        size_hint_y: 0.3
+        size_hint_x: 0.6
+        pos_hint_x: 0.5
+        text: 'Create'
+        on_press: root.create_btn_pressed()

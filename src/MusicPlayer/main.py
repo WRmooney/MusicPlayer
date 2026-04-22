@@ -1,5 +1,7 @@
 # kivy version requirement
 import kivy
+from urllib3.poolmanager import pool_classes_by_scheme
+
 kivy.require('2.3.1') # replace with your current kivy version !
 
 #region
@@ -18,6 +20,8 @@ from kivy.uix.slider import Slider
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, FallOutTransition, RiseInTransition
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.popup import Popup
+from kivy.uix.button import Button
 
 
 
@@ -60,9 +64,7 @@ PlaybackController = None
 """
 **TODO**
 make sort by button dropdown
-make adding playlists with modal popup
 make adding songs to playlist with playlist view
-make screen preservation, ie remember previous screen/tab
 prevent text overflow, make better formatting
 add queue view in musicmenu and mainmenu
 add current scope name for queue view (ex. Playing from: My Playlist 1)
@@ -124,6 +126,7 @@ class Playlist_Row(RecycleDataViewBehavior, BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+
     def refresh_view_attrs(self, rv, index, data):
         """
         This method is called every time the widget
@@ -140,8 +143,15 @@ class Playlist_Row(RecycleDataViewBehavior, BoxLayout):
 
     def play_btn(self):
         # call play from songs using current playlist list
-        PlaybackController.play_from_playlist(self.song_list)
-        print("Playing Playlist: " + str(self.name))
+        if self.song_list != []:
+            PlaybackController.play_from_playlist(self.song_list)
+            print("Playing Playlist: " + str(self.name))
+        else:
+            popup_content = Button(text='OK', size_hint=(0.6, 0.9))
+            popup = Popup(title="Playlist is Empty", content=popup_content, auto_dismiss=False,
+                          size_hint=(0.3, 0.2))
+            popup_content.bind(on_press=popup.dismiss)
+            popup.open()
 
     def view_playlist(self):
         sm.transition = RiseInTransition()
@@ -153,6 +163,37 @@ class Playlist_Row(RecycleDataViewBehavior, BoxLayout):
 class Clickable_Layout(ButtonBehavior, BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+# Custom class for creating a playlist from the popup
+class Create_Playlist_Form(BoxLayout):
+    def __init__(self, ref_to_mainmenu, popup_ref, **kwargs):
+        super().__init__(**kwargs)
+        self.ref_to_mainmenu = ref_to_mainmenu
+        self.popup_ref = popup_ref
+
+    def create_btn_pressed(self):
+        print(playlists["playlists"])
+        print(self.ids.playlist_name_input.text)
+        # check for empty field
+        if self.ids.playlist_name_input.text == '':
+            popup_content = Button(text='OK', size_hint=(0.6, 0.9))
+            popup = Popup(title="Playlist Name Cannot Be Empty" ,content=popup_content, auto_dismiss=False,
+                          size_hint=(0.3,0.2))
+            popup_content.bind(on_press=popup.dismiss)
+            popup.open()
+            return
+        # check for pre-existing playlist name
+        elif self.ids.playlist_name_input.text in (playlist['name'] for playlist in playlists["playlists"]):
+            popup_content = Button(text='OK', size_hint=(0.6, 0.9))
+            popup = Popup(title="Playlist Name Already Exists", content=popup_content, auto_dismiss=False,
+                          size_hint=(0.3,0.2))
+            popup_content.bind(on_press=popup.dismiss)
+            popup.open()
+            return
+        # playlist name is valid
+        else:
+            self.ref_to_mainmenu.create_playlist(self.ids.playlist_name_input.text)
+            self.popup_ref.dismiss()
 
 #endregion
 
@@ -433,6 +474,16 @@ class MainMenu(Screen):
         PlaybackController.skip()
         PlaybackController.debug_print("MainMenu skip_btn_press")
 
+    def create_playlist_popup(self):
+        popup_content = Create_Playlist_Form(self, None)
+        popup = Popup(title='Create Playlist',content=popup_content,
+                      size_hint=(0.5, 0.5))
+        popup_content.popup_ref = popup
+        popup.open()
+
+    def create_playlist(self, playlist_name):
+        playlists["playlists"].append({'name': playlist_name, 'songs': [], 'song_count': 0, 'total_length': 0})
+        self.display_playlists()
 
 #endregion
 
