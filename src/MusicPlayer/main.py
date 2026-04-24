@@ -331,6 +331,19 @@ class PlaylistView(Screen):
         if self.cur_playlist is None:
             return
         song_list = self.cur_playlist.song_list
+        self.ids.cur_playlist_name.text = self.cur_playlist.name
+        self.ids.cur_playlist_song_count.text = str(self.cur_playlist.song_count) + " songs"
+        hours = math.floor(self.cur_playlist.total_length/3600)
+        minutes = math.floor((self.cur_playlist.total_length - (hours*3600))/60)
+        length_str = ""
+        if hours != 0:
+            if hours == 1:
+                length_str += str(hours) + " Hour and "
+            else:
+                length_str += str(hours) + " Hours and "
+        length_str += str(minutes) + " Minutes"
+
+        self.ids.cur_playlist_length.text = length_str
 
         # put songs in recycle view
         self.ids.song_list.data = [{'info': songs["songs"][song_list[i]], 'id': song_list[i], 'index': i} for i in range(len(song_list))]

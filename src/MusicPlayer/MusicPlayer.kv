@@ -384,12 +384,18 @@
                     background_color: btn_color
 
             Label:
-                size_hint_y: 0.3
+                id: cur_playlist_name
+                size_hint_y: 0.2
                 text: 'Playlist Name'
 
             Label:
-                size_hint_y: 0.3
+                id: cur_playlist_song_count
+                size_hint_y: 0.2
                 text: 'Number of Songs'
+            Label:
+                id: cur_playlist_length
+                size_hint_y: 0.2
+                text: '0 Hours and 0 Minutes'
 
         RecycleView:
             id: song_list
