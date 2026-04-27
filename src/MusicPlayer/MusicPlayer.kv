@@ -155,12 +155,14 @@
         text: time.strftime('%M:%S', time.gmtime(root.info.get('duration', 0)))
         size_hint_x: 0.1
     Button:
-        text: 'Add to Queue'
+        id: dropdown_btn
+        text: '...'
         size_hint_x: 0.1
         size_hint_y: 0.95
         background_normal: ''
         background_color: btn_color
-        on_press: root.add_to_queue()
+        on_press: root.options_btn()
+
 
 <Playlist_Row>:
     height: 100
@@ -189,7 +191,7 @@
             size_hint_x: 0.3
         Label:
             id: pr_duration
-            text: time.strftime('%M:%S', time.gmtime(root.total_length))
+            text: time.strftime('%H:%M:%S', time.gmtime(root.total_length))
             size_hint_x: 0.1
     Button:
         id: dropdown_btn
@@ -207,6 +209,21 @@
         height: 100
         on_release: root.delete_playlist()
 
+<SongDropDown>:
+    width: self.parent.width * 3 if self.parent else 200
+    Button:
+        text: 'Add To Queue'
+        size_hint_y: None
+        height: 100
+        on_release: root.add_to_queue()
+    Button:
+        text: 'Add to Playlist'
+        size_hint_y: None
+        height: 100
+        on_release: root.add_to_playlist()
+
+<PlaylistSelectDropdown>
+    do_scroll_y: True
 
 <MainMenu>:
     name: 'MainMenu'

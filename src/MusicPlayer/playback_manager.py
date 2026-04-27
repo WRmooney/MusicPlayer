@@ -1,7 +1,7 @@
 from ffpyplayer.player import MediaPlayer
 import threading
 import file_manager as fm
-import time
+import math
 import random
 
 
@@ -452,3 +452,17 @@ class PlaybackManager:
         self.priorityQueue.append(song_id)
         self.update_next_song()
         self.debug_print("Add_to_queue")
+
+    def get_length_text(self, length):
+        hours = math.floor(length / 3600)
+        minutes = math.floor((length - (hours * 3600)) / 60)
+        length_str = ""
+        if hours != 0:
+            if hours == 1:
+                length_str += str(hours) + " Hour "
+            else:
+                length_str += str(hours) + " Hours "
+        length_str += str(minutes) + " Min"
+
+        return length_str
+
