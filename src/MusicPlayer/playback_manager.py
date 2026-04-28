@@ -342,13 +342,14 @@ class PlaybackManager:
 
     # Start playing from all songs (mainmenu)
     def play_from_songs(self, song_id, songs):
+        # reset players
+        self.reset_players()
+
         # empty queues
         self.previouslyPlayed = []
         self.currentSongId = song_id
         self.priorityQueue = []
-        self.prevSong = None
-        self.curSong = None
-        self.nextSong = None
+
         self.prevSongId = ""
         self.nextSongId = ""
         # get list of all song ids, set scope
@@ -379,13 +380,14 @@ class PlaybackManager:
             func.update_info()
 
     def play_from_playlist(self, songs):
+        # reset players
+        self.reset_players()
+
         # empty queues
         self.previouslyPlayed = []
         self.priorityQueue = []
         self.scope = []
-        self.prevSong = None
-        self.curSong = None
-        self.nextSong = None
+
         self.prevSongId = ""
         self.nextSongId = ""
         # get list of all song ids, set scope
@@ -414,14 +416,15 @@ class PlaybackManager:
             func.update_info()
 
     def play_song_in_playlist(self, playlist, index):
+        # reset players
+        self.reset_players()
+
         # empty queues
         self.previouslyPlayed = []
         self.currentSongId = playlist[index]
         self.priorityQueue = []
         self.scope = []
-        self.prevSong = None
-        self.curSong = None
-        self.nextSong = None
+
         self.prevSongId = ""
         self.nextSongId = ""
         # get list of all song ids, set scope
@@ -466,3 +469,16 @@ class PlaybackManager:
 
         return length_str
 
+    def reset_players(self):
+        # Properly shut down each player if it exists
+        for player_attr in ['prevSong', 'curSong', 'nextSong']:
+            player = getattr(self, player_attr)
+            if player is not None:
+                try:
+                    print("closing player")
+                    player.set_pause(True)
+                    self.close_song(player)
+                except:
+                    print("passing")
+                    pass
+            setattr(self, player_attr, None)

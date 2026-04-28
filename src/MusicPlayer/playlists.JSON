@@ -73,16 +73,21 @@
                 "18",
                 "14",
                 "6",
-                "13"
+                "13",
+                "11"
             ],
-            "song_count": 6,
-            "total_length": 1781.629387755102
+            "song_count": 7,
+            "total_length": 1937.0840816326531
         },
         {
             "name": "Does this work?",
-            "songs": [],
-            "song_count": 0,
-            "total_length": 0
+            "songs": [
+                "11",
+                "12",
+                "3"
+            ],
+            "song_count": 3,
+            "total_length": 745.9004081632654
         }
     ]
 }
