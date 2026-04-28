@@ -140,6 +140,8 @@
         background_normal: ''
         background_color: btn_color
     Label:
+        shorten: True
+        shorten_from: 'right'
         id: sr_title
         text: root.info.get('title', 'Unknown Song')
         text_size: self.size
@@ -147,6 +149,8 @@
         valign: 'middle'
         size_hint_x: 0.4
     Label:
+        shorten: True
+        shorten_from: 'right'
         id: sr_artist
         text: root.info.get('artist', 'Unknown Artist')
         size_hint_x: 0.3
@@ -179,6 +183,8 @@
         size_hint_x: 0.8
         on_press: root.view_playlist()
         Label:
+            shorten: True
+            shorten_from: 'right'
             id: pr_name
             text: root.name
             text_size: self.size
@@ -203,6 +209,11 @@
         on_press: root.open_dropdown()
 
 <PlaylistDropDown>:
+    size_hint_x: None
+    auto_width: False
+    width: self.parent.width * 0.2 if self.parent else 240
+    minimum_width: 240
+    maximum_width: 400
     Button:
         text: 'Delete'
         size_hint_y: None
@@ -210,7 +221,11 @@
         on_release: root.delete_playlist()
 
 <SongDropDown>:
-    width: self.parent.width * 3 if self.parent else 200
+    size_hint_x: None
+    auto_width: False
+    width: self.parent.width * 0.2 if self.parent else 240
+    minimum_width: 240
+    maximum_width: 400
     Button:
         text: 'Add To Queue'
         size_hint_y: None
@@ -222,7 +237,34 @@
         height: 100
         on_release: root.add_to_playlist()
 
+<SongDropDownPlaylistView>:
+    size_hint_x: None
+    auto_width: False
+    width: self.parent.width * 0.2 if self.parent else 240
+    minimum_width: 240
+    maximum_width: 400
+    Button:
+        text: 'Add To Queue'
+        size_hint_y: None
+        height: 100
+        on_release: root.add_to_queue()
+    Button:
+        text: 'Add to Playlist'
+        size_hint_y: None
+        height: 100
+        on_release: root.add_to_playlist()
+    Button:
+        text: 'Remove From Playlist'
+        size_hint_y: None
+        height: 100
+        on_release: root.remove_from_playlist()
+
 <PlaylistSelectDropdown>
+    size_hint_x: None
+    auto_width: False
+    width: self.parent.width * 0.2 if self.parent else 240
+    minimum_width: 240
+    maximum_width: 400
     do_scroll_y: True
 
 <MainMenu>:
@@ -270,9 +312,21 @@
             size_hint_y: 0.05
             orientation: 'horizontal'
 
-            Label:
+            RelativeLayout:
                 size_hint_x: 0.5
-                text: 'Sort by: '
+                Spinner:
+                    pos: (0,0)
+                    id: mainmenuspinner
+                    text: 'Sort by: Title'
+                    values: 'Sort by: Title', 'Sort by: Artist', 'Sort by: Duration, Ascending', 'Sort by: Duration, Descending'
+                    on_text: root.update_sort()
+
+                Spinner:
+                    pos: (-1000, 1000)
+                    id: mainmenuplaylistspinner
+                    text: 'Sort by: Created'
+                    values: 'Sort by: Created', 'Sort by: Name', 'Sort by: Song Count, Ascending', 'Sort by: Song Count, Descending', 'Sort by: Duration, Ascending', 'Sort by: Duration, Descending'
+                    on_text: root.update_sort()
 
             Button:
                 id: add_playlist_btn
@@ -310,6 +364,9 @@
                 orientation: 'vertical'
                 size_hint_x: 0.4
                 Label:
+                    text_size: self.size
+                    shorten: True
+                    shorten_from: 'right'
                     id: cur_title_label
                     text: "No Song Info"
                     size_hint_y: 0.5
@@ -320,6 +377,8 @@
                             pos:self.pos
                             size:self.size
                 Label:
+                    shorten: True
+                    shorten_from: 'right'
                     id: cur_artist_label
                     text: "No Artist Info"
                     size_hint_y: 0.5
@@ -401,6 +460,9 @@
                     background_color: btn_color
 
             Label:
+
+                shorten: True
+                shorten_from: 'right'
                 id: cur_playlist_name
                 size_hint_y: 0.2
                 text: 'Playlist Name'
@@ -444,6 +506,9 @@
                 orientation: 'vertical'
                 size_hint_x: 0.4
                 Label:
+                    text_size: self.size
+                    shorten: True
+                    shorten_from: 'right'
                     id: cur_title_label
                     text: "No Song Info"
                     size_hint_y: 0.5
@@ -454,6 +519,8 @@
                             pos:self.pos
                             size:self.size
                 Label:
+                    shorten: True
+                    shorten_from: 'right'
                     id: cur_artist_label
                     text: "No Artist Info"
                     size_hint_y: 0.5

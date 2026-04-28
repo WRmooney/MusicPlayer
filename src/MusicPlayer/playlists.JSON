@@ -58,10 +58,31 @@
                 "5",
                 "1",
                 "7",
+                "19",
+                "5",
                 "19"
             ],
-            "song_count": 14,
-            "total_length": 4086.099591836735
+            "song_count": 16,
+            "total_length": 4530.54693877551
+        },
+        {
+            "name": "playlist with a super long name because i want to test how the text shortens",
+            "songs": [
+                "11",
+                "7",
+                "18",
+                "14",
+                "6",
+                "13"
+            ],
+            "song_count": 6,
+            "total_length": 1781.629387755102
+        },
+        {
+            "name": "Does this work?",
+            "songs": [],
+            "song_count": 0,
+            "total_length": 0
         }
     ]
 }

@@ -95,6 +95,7 @@ class Song_Row(RecycleDataViewBehavior, BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.dropdown = SongDropDown(self)
+        self.pvdropdown = SongDropDownPlaylistView(self)
         self.playlist_select = PlaylistSelectDropdown(self)
 
     def refresh_view_attrs(self, rv, index, data):
@@ -118,14 +119,9 @@ class Song_Row(RecycleDataViewBehavior, BoxLayout):
 
     def options_btn(self):
         if sm.current == 'PlaylistView':
-            self.dropdown = SongDropDown(self)
-            self.dropdown.add_widget(Button(
-                text="Remove from Playlist",
-                size_hint_y=None,
-                height=100,
-                on_release=self.remove_from_playlist
-            ))
-        self.dropdown.open(self.ids.dropdown_btn)
+            self.pvdropdown.open(self.ids.dropdown_btn)
+        else:
+            self.dropdown.open(self.ids.dropdown_btn)
 
     def add_to_queue(self):
         PlaybackController.add_to_queue(self.id)
@@ -187,6 +183,33 @@ class PlaylistSelectButton(Button):
                 return
 
 class SongDropDown(DropDown):
+    def __init__(self, song_ref, **kwargs):
+        super().__init__(**kwargs)
+        self.song_ref = song_ref
+        self.width = 400
+
+    def add_to_queue(self):
+        self.song_ref.add_to_queue()
+        self.dismiss()
+
+    def add_to_playlist(self):
+        self.song_ref.add_to_playlist()
+        self.dismiss()
+
+    def remove_from_playlist(self):
+        self.song_ref.remove_from_playlist()
+        self.dismiss()
+
+    def open(self, widget, **kwargs):
+        super().open(widget)
+        print("Opening songdropdown")
+        self.x = widget.x - self.width
+
+        self.y = self.y + widget.height
+        self.halign = 'center'
+        print(self.width)
+
+class SongDropDownPlaylistView(DropDown):
     def __init__(self, song_ref, **kwargs):
         super().__init__(**kwargs)
         self.song_ref = song_ref
@@ -515,8 +538,18 @@ class MainMenu(Screen):
     def display_songs(self):
         global songs
 
-        # sort by title in alphabetic order
-        key_list = sorted(list(songs["songs"].keys()), key=lambda x: songs["songs"][x]["title"])
+        # sort depending on current sort filter
+        if self.ids.mainmenuspinner.text == 'Sort by: Title':
+            key_list = sorted(list(songs["songs"].keys()), key=lambda x: songs["songs"][x]["title"])
+        elif self.ids.mainmenuspinner.text == 'Sort by: Artist':
+            key_list = sorted(list(songs["songs"].keys()), key=lambda x: songs["songs"][x]["artist"])
+        elif self.ids.mainmenuspinner.text == 'Sort by: Duration, Ascending':
+            key_list = sorted(list(songs["songs"].keys()), key=lambda x: songs["songs"][x]["duration"])
+        elif self.ids.mainmenuspinner.text == 'Sort by: Duration, Descending':
+            key_list = list(reversed(sorted(list(songs["songs"].keys()), key=lambda x: songs["songs"][x]["duration"])))
+        else: # order by ID as a fallback
+            print("FALLBACK")
+            key_list = list(songs["songs"].keys())
 
         # now we have a sorted list of each song as a dictionary, put it in the recycle view
         self.ids.main_song_list.data = [{'info': songs["songs"][key], 'id': key} for key in key_list]
@@ -525,12 +558,28 @@ class MainMenu(Screen):
         self.ids.add_playlist_btn.opacity = 0
         self.ids.add_playlist_btn.disabled = True
 
+        # Swap sort by button
+        self.ids.mainmenuplaylistspinner.pos = (-1000, 1000)
+        self.ids.mainmenuspinner.pos = (0, 0)
+
     def display_playlists(self):
         global playlists
 
-        # sort by playlist title in alphabetic order
-        playlists_sorted = sorted(playlists["playlists"], key=lambda playlist: playlist["name"])
-
+        # sort depending on order
+        if self.ids.mainmenuplaylistspinner.text == 'Sort by: Created':
+            playlists_sorted = playlists["playlists"]
+        elif self.ids.mainmenuplaylistspinner.text == 'Sort by: Name':
+            playlists_sorted = sorted(playlists["playlists"], key=lambda playlist: playlist["name"])
+        elif self.ids.mainmenuplaylistspinner.text == 'Sort by: Song Count, Ascending':
+            playlists_sorted = sorted(playlists["playlists"], key=lambda playlist: playlist["song_count"])
+        elif self.ids.mainmenuplaylistspinner.text == 'Sort by: Song Count, Descending':
+            playlists_sorted = list(reversed(sorted(playlists["playlists"], key=lambda playlist: playlist["song_count"])))
+        elif self.ids.mainmenuplaylistspinner.text == 'Sort by: Duration, Ascending':
+            playlists_sorted = sorted(playlists["playlists"], key=lambda playlist: playlist["total_length"])
+        elif self.ids.mainmenuplaylistspinner.text == 'Sort by: Duration, Descending':
+            playlists_sorted = list(reversed(sorted(playlists["playlists"], key=lambda playlist: playlist["total_length"])))
+        else: # fallback, sort by order created
+            playlists_sorted = playlists["playlists"]
 
         self.ids.main_song_list.data = [{'name': playlists_sorted[i]["name"],
                                          'song_list': playlists_sorted[i]["songs"],
@@ -542,8 +591,15 @@ class MainMenu(Screen):
         self.ids.add_playlist_btn.opacity = 1
         self.ids.add_playlist_btn.disabled = False
 
-    def update_playlists_info(self):
-        pass
+        # Swap sort by button
+        self.ids.mainmenuspinner.pos = (-1000, 1000)
+        self.ids.mainmenuplaylistspinner.pos = (0,0)
+
+    def update_sort(self):
+        if self.ids.main_song_list.viewclass == Song_Row:
+            self.display_songs()
+        elif self.ids.main_song_list.viewclass == Playlist_Row:
+            self.display_playlists()
 
     def update_tab(self):
         if self.ids.main_song_list.viewclass == Song_Row:
