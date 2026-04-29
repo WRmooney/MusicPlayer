@@ -4,7 +4,9 @@
     "shuffle": false,
     "previous_queue": [],
     "current_song_id": "1",
-    "priority_queue": [],
+    "priority_queue": [
+        "11"
+    ],
     "queue": [
         "3",
         "5"

@@ -22,7 +22,9 @@ from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
+from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.dropdown import DropDown
+from kivy.uix.label import Label
 
 
 
@@ -65,11 +67,10 @@ PlaybackController = None
 
 """
 **TODO**
-make sort by button dropdown
-make adding songs to playlist with playlist view
-prevent text overflow, make better formatting
+select multiple songs to add to playlist
 add queue view in musicmenu and mainmenu
 add current scope name for queue view (ex. Playing from: My Playlist 1)
+revamp visuals
 """
 
 """ Custom Kivy Classes """
@@ -127,18 +128,26 @@ class Song_Row(RecycleDataViewBehavior, BoxLayout):
         PlaybackController.add_to_queue(self.id)
 
     def add_to_playlist(self):
-        self.playlist_select.open(self.ids.dropdown_btn)
+        popup_content = AddToPlaylistForm(self, None)
+        popup = Popup(title='Add to Playlist(s)', content=popup_content,
+                      size_hint=(None,None),
+                      size=(Window.width * 0.7, Window.height * 0.7))
+        popup_content.popup_ref = popup
+        popup_content.ids.playlist_list.data = [{'name': playlist["name"], 'ref':popup_content} for playlist in playlists["playlists"]]
+
+        popup.open()
+
 
     def remove_from_playlist(self, btn):
-        for playlist in playlists["playlists"]:
-            if playlist["name"] == sm.get_screen('PlaylistView').cur_playlist.name:
-                playlist["songs"].pop(self.index)
-                playlist["song_count"], playlist["total_length"] = fm.get_playlist_length(songs, playlist)
-                break
-        sm.get_screen('PlaylistView').cur_playlist.song_list.pop(self.index-1)
-        sm.get_screen('PlaylistView').update_songs()
+            for playlist in playlists["playlists"]:
+                if playlist["name"] == sm.get_screen('PlaylistView').cur_playlist.name:
+                    playlist["songs"].pop(self.index)
+                    playlist["song_count"], playlist["total_length"] = fm.get_playlist_length(songs, playlist)
+                    break
+            sm.get_screen('PlaylistView').cur_playlist.song_list.pop(self.index-1)
+            sm.get_screen('PlaylistView').update_songs()
 
-        self.dropdown.dismiss()
+            self.dropdown.dismiss()
 
 class PlaylistSelectDropdown(DropDown):
     def __init__(self, song_ref, **kwargs):
@@ -146,11 +155,16 @@ class PlaylistSelectDropdown(DropDown):
         self.song_ref = song_ref
         self.width = 400
         for playlist in playlists["playlists"]:
-            btn = Button(
+            btn = ClickableLabel(
                 text=playlist["name"],
                 size_hint_y=None,
                 height="100",
                 on_release=self.add_song,
+                text_size= self.size,
+                shorten= True,
+                shorten_from= 'right',
+                halign='center',
+                valign='center'
             )
             self.add_widget(btn)
 
@@ -162,8 +176,27 @@ class PlaylistSelectDropdown(DropDown):
                 self.dismiss()
                 return
 
+    def check_playlists(self):
+        children = self.container.children
+        playlist_names = [playlist["name"] for playlist in playlists["playlists"] if playlist["name"] not in list(child.text for child in children)]
+        for name in playlist_names:
+            btn = ClickableLabel(
+                text=name,
+                size_hint_y=None,
+                height="100",
+                on_release=self.add_song,
+                text_size=self.size,
+                shorten=True,
+                shorten_from='right',
+                halign='center',
+                valign='center'
+            )
+            self.add_widget(btn)
+
+
     def open(self, widget, **kwargs):
         super().open(widget)
+        self.check_playlists()
         self.x = widget.x - self.width
         self.y = self.y + widget.height
         self.halign = 'center'
@@ -202,12 +235,10 @@ class SongDropDown(DropDown):
 
     def open(self, widget, **kwargs):
         super().open(widget)
-        print("Opening songdropdown")
         self.x = widget.x - self.width
 
         self.y = self.y + widget.height
         self.halign = 'center'
-        print(self.width)
 
 class SongDropDownPlaylistView(DropDown):
     def __init__(self, song_ref, **kwargs):
@@ -232,6 +263,17 @@ class SongDropDownPlaylistView(DropDown):
         self.x = widget.x - self.width
         self.y = self.y + widget.height
         self.halign = 'center'
+
+class AddToPlaylistRecycleButton(RecycleDataViewBehavior, ToggleButton):
+    name = StringProperty('')
+    ref = ObjectProperty(None)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def on_press(self):
+        self.ref.check_update(self)
+
 
 
 # class to display song and info in songs/playlists view
@@ -303,6 +345,10 @@ class Clickable_Layout(ButtonBehavior, BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+class ClickableLabel(ButtonBehavior, Label):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 # Custom class for creating a playlist from the popup
 class Create_Playlist_Form(BoxLayout):
     def __init__(self, ref_to_mainmenu, popup_ref, **kwargs):
@@ -311,8 +357,6 @@ class Create_Playlist_Form(BoxLayout):
         self.popup_ref = popup_ref
 
     def create_btn_pressed(self):
-        print(playlists["playlists"])
-        print(self.ids.playlist_name_input.text)
         # check for empty field
         if self.ids.playlist_name_input.text == '':
             popup_content = Button(text='OK', size_hint=(0.6, 0.9))
@@ -333,6 +377,34 @@ class Create_Playlist_Form(BoxLayout):
         else:
             self.ref_to_mainmenu.create_playlist(self.ids.playlist_name_input.text)
             self.popup_ref.dismiss()
+
+class AddToPlaylistForm(BoxLayout):
+    def __init__(self, ref_to_song, popup_ref, **kwargs):
+        super().__init__(**kwargs)
+        self.ref_to_song = ref_to_song # can change to "selected_songs" and make a list, iterate through list when adding to playlist
+        self.popup_ref = popup_ref
+
+
+    def check_update(self, btn):
+        selected = self.get_selected()
+        if len(selected) > 0:
+            self.ids.submit_btn.disabled = False
+        else:
+            self.ids.submit_btn.disabled = True
+
+    def get_selected(self):
+        buttons = self.ids.recyclebox.children
+        return [button.text for button in buttons if button.state == 'down']
+
+    def submit_to_playlists(self):
+        selected = self.get_selected()
+        if len(selected) > 0:
+            for playlist in playlists["playlists"]:
+                if playlist["name"] in selected:
+                    playlist["songs"].append(self.ref_to_song.id)
+                    playlist["song_count"], playlist["total_length"] = fm.get_playlist_length(songs, playlist)
+            self.popup_ref.dismiss()
+            return
 
 #endregion
 
@@ -500,7 +572,6 @@ class PlaylistView(Screen):
             if playlist["name"] == self.cur_playlist.name:
                 self.cur_playlist.song_list = playlist["songs"]
                 self.cur_playlist.song_count = playlist["song_count"]
-                print(playlist["total_length"])
                 self.cur_playlist.total_length = playlist["total_length"]
                 break
         self.update_view(self.cur_playlist)

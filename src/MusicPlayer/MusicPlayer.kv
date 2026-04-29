@@ -588,6 +588,41 @@
         id: create_button
         size_hint_y: 0.3
         size_hint_x: 0.6
-        pos_hint_x: 0.5
         text: 'Create'
         on_press: root.create_btn_pressed()
+
+<AddToPlaylistForm>:
+    orientation: 'vertical'
+    size_hint: 1, 1
+
+    RecycleView:
+        id: playlist_list
+        size_hint_y: 0.8
+        do_scroll_x: False
+        do_scroll_y: True
+        viewclass: 'AddToPlaylistRecycleButton'
+        RecycleBoxLayout:
+            id: recyclebox
+            default_size: None, dp(48)
+            default_size_hint: 1, None
+            size_hint_y: None
+            height: self.minimum_height
+            orientation: 'vertical'
+
+
+    Button:
+        id: submit_btn
+        size_hint_y: 0.2
+        text: 'Add to Playlist(s)'
+        disabled: True
+        on_press: root.submit_to_playlists()
+
+<AddToPlaylistRecycleButton>:
+    height: 100
+    shorten: True
+    shorten_from: 'right'
+    text: root.name
+    text_size: self.size
+    halign: 'left'
+    valign: 'middle'
+    size_hint_x: 0.4
