@@ -319,14 +319,14 @@
                     id: mainmenuspinner
                     text: 'Sort by: Title'
                     values: 'Sort by: Title', 'Sort by: Artist', 'Sort by: Duration, Ascending', 'Sort by: Duration, Descending'
-                    on_text: root.update_sort()
+                    on_text: root.update_view()
 
                 Spinner:
                     pos: (-1000, 1000)
                     id: mainmenuplaylistspinner
                     text: 'Sort by: Created'
                     values: 'Sort by: Created', 'Sort by: Name', 'Sort by: Song Count, Ascending', 'Sort by: Song Count, Descending', 'Sort by: Duration, Ascending', 'Sort by: Duration, Descending'
-                    on_text: root.update_sort()
+                    on_text: root.update_view()
 
             Button:
                 id: add_playlist_btn
@@ -511,6 +511,7 @@
                     text_size: self.size
                     shorten: True
                     shorten_from: 'right'
+                    halign: 'center'
                     id: cur_title_label
                     text: "No Song Info"
                     size_hint_y: 0.5

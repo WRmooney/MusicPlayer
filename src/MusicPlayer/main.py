@@ -137,17 +137,23 @@ class Song_Row(RecycleDataViewBehavior, BoxLayout):
 
         popup.open()
 
+    def remove_from_playlist(self):
+        pv = sm.get_screen('PlaylistView')
+        playlist_name = pv.cur_playlist_name
 
-    def remove_from_playlist(self, btn):
-            for playlist in playlists["playlists"]:
-                if playlist["name"] == sm.get_screen('PlaylistView').cur_playlist.name:
-                    playlist["songs"].pop(self.index)
-                    playlist["song_count"], playlist["total_length"] = fm.get_playlist_length(songs, playlist)
-                    break
-            sm.get_screen('PlaylistView').cur_playlist.song_list.pop(self.index-1)
-            sm.get_screen('PlaylistView').update_songs()
+        for playlist in playlists["playlists"]:
+            if playlist["name"] == playlist_name:
+                # Remove song from data
+                playlist["songs"].pop(self.index)
 
-            self.dropdown.dismiss()
+                # Recalculate metadata
+                playlist["song_count"], playlist["total_length"] = fm.get_playlist_length(songs, playlist)
+                break
+
+        # Refresh the view
+        pv.update_view()
+
+        self.dropdown.dismiss()
 
 class PlaylistSelectDropdown(DropDown):
     def __init__(self, song_ref, **kwargs):
@@ -200,20 +206,6 @@ class PlaylistSelectDropdown(DropDown):
         self.x = widget.x - self.width
         self.y = self.y + widget.height
         self.halign = 'center'
-
-class PlaylistSelectButton(Button):
-    def __init__(self, name, song_ref, dropdown_ref, **kwargs):
-        super().__init__(**kwargs)
-        self.name = name
-        self.song_ref = song_ref
-        self.dropdown_ref = dropdown_ref
-
-    def add_song(self):
-        for playlist in playlists["playlists"]:
-            if playlist["name"] == self.name:
-                playlist["songs"].append(self.song_ref.id)
-                self.dropdown_ref.dismiss()
-                return
 
 class SongDropDown(DropDown):
     def __init__(self, song_ref, **kwargs):
@@ -332,6 +324,7 @@ class PlaylistDropDown(DropDown):
 
     def delete_playlist(self):
         self.mainmenu_ref.delete_playlist(self.playlist_ref.name)
+
         self.dismiss()
 
     def open(self, widget, **kwargs):
@@ -403,8 +396,14 @@ class AddToPlaylistForm(BoxLayout):
                 if playlist["name"] in selected:
                     playlist["songs"].append(self.ref_to_song.id)
                     playlist["song_count"], playlist["total_length"] = fm.get_playlist_length(songs, playlist)
+            self.update_views()
             self.popup_ref.dismiss()
             return
+
+    def update_views(self):
+        sm.get_screen('PlaylistView').update_view()
+        sm.get_screen('MainMenu').update_view()
+
 
 #endregion
 
@@ -519,19 +518,23 @@ class PlaylistView(Screen):
         super(PlaylistView, self).__init__(**kwargs)
         PlaybackController.funcs_to_call.append(self)
         self.update_info()
-        self.cur_playlist = None
+        self.cur_playlist_name = None
 
     def display_songs(self):
-        if self.cur_playlist is None:
+        playlist = self.get_current_playlist()
+        if not playlist:
             return
-        song_list = self.cur_playlist.song_list
-        self.ids.cur_playlist_name.text = self.cur_playlist.name
-        self.ids.cur_playlist_song_count.text = str(self.cur_playlist.song_count) + " songs"
 
-        self.ids.cur_playlist_length.text = PlaybackController.get_length_text(self.cur_playlist.total_length)
+        song_list = playlist["songs"]
 
-        # put songs in recycle view
-        self.ids.song_list.data = [{'info': songs["songs"][song_list[i]], 'id': song_list[i], 'index': i} for i in range(len(song_list))]
+        self.ids.cur_playlist_name.text = playlist["name"]
+        self.ids.cur_playlist_song_count.text = str(playlist["song_count"]) + " songs"
+        self.ids.cur_playlist_length.text = PlaybackController.get_length_text(playlist["total_length"])
+
+        self.ids.song_list.data = [
+            {'info': songs["songs"][song_list[i]], 'id': song_list[i], 'index': i}
+            for i in range(len(song_list))
+        ]
 
     def open_music_menu(self):
         sm.transition = SlideTransition()
@@ -567,14 +570,11 @@ class PlaylistView(Screen):
         elif not PlaybackController.get_pause() and self.ids.main_play_btn.text != 'Pause':
             self.ids.main_play_btn.text = 'Pause'
 
-    def update_songs(self):
+    def get_current_playlist(self):
         for playlist in playlists["playlists"]:
-            if playlist["name"] == self.cur_playlist.name:
-                self.cur_playlist.song_list = playlist["songs"]
-                self.cur_playlist.song_count = playlist["song_count"]
-                self.cur_playlist.total_length = playlist["total_length"]
-                break
-        self.update_view(self.cur_playlist)
+            if playlist["name"] == self.cur_playlist_name:
+                return playlist
+        return None
 
     def back_btn_press(self):
         PlaybackController.back()
@@ -587,12 +587,19 @@ class PlaylistView(Screen):
         PlaybackController.skip()
         PlaybackController.debug_print("PlaylistView skip_btn_press")
 
-    def update_view(self, playlistref):
-        self.cur_playlist = playlistref
+    def update_view(self, playlistref=None):
+        if playlistref is not None:
+            self.cur_playlist_name = playlistref.name
+
+        if not self.cur_playlist_name:
+            return
+
         self.display_songs()
 
     def play_from_playlist(self, index):
-        PlaybackController.play_song_in_playlist(self.cur_playlist.song_list, index)
+        playlist = self.get_current_playlist()
+        if playlist:
+            PlaybackController.play_song_in_playlist(playlist["songs"], index)
 
     def back_screen_btn(self):
         sm.transition = FallOutTransition()
@@ -666,7 +673,7 @@ class MainMenu(Screen):
         self.ids.mainmenuspinner.pos = (-1000, 1000)
         self.ids.mainmenuplaylistspinner.pos = (0,0)
 
-    def update_sort(self):
+    def update_view(self):
         if self.ids.main_song_list.viewclass == Song_Row:
             self.display_songs()
         elif self.ids.main_song_list.viewclass == Playlist_Row:

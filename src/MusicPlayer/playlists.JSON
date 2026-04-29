@@ -17,10 +17,11 @@
                 "3",
                 "6",
                 "2",
-                "4"
+                "4",
+                "16"
             ],
-            "song_count": 4,
-            "total_length": 1375.555918367347
+            "song_count": 5,
+            "total_length": 1491.6702040816326
         },
         {
             "name": "This is my playlist",
@@ -40,10 +41,11 @@
                 "5",
                 "8",
                 "11",
-                "7"
+                "7",
+                "13"
             ],
-            "song_count": 6,
-            "total_length": 1843.5657142857142
+            "song_count": 7,
+            "total_length": 2086.582857142857
         },
         {
             "name": "Length Test",
@@ -66,45 +68,35 @@
                 "19",
                 "4",
                 "11",
-                "7"
+                "7",
+                "16",
+                "3"
             ],
-            "song_count": 19,
-            "total_length": 5501.309387755102
+            "song_count": 21,
+            "total_length": 5915.271836734694
         },
         {
             "name": "playlist with a super long name because i want to test how the text shortens",
             "songs": [
                 "11",
                 "7",
-                "18",
-                "14",
                 "6",
-                "13",
+                "7",
                 "11",
                 "11",
+                "16",
+                "16",
+                "16",
+                "16",
                 "11",
-                "7"
-            ],
-            "song_count": 10,
-            "total_length": 2669.7665306122453
-        },
-        {
-            "name": "test1",
-            "songs": [
+                "16",
+                "6",
+                "7",
+                "4",
                 "11"
             ],
-            "song_count": 1,
-            "total_length": 155.45469387755102
-        },
-        {
-            "name": "test2",
-            "songs": [
-                "11",
-                "11",
-                "7"
-            ],
-            "song_count": 3,
-            "total_length": 732.6824489795919
+            "song_count": 16,
+            "total_length": 3850.8408163265317
         },
         {
             "name": "new playlist with an even longer name because it isnt long enough for the adding to playlist scrollview to test the truncation of the text",
